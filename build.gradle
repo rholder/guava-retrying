@@ -29,6 +29,11 @@ task javadocJar(type: Jar, dependsOn: 'javadoc') {
     classifier = 'javadoc'
 }
 
+task exportJavadoc(type: Copy, dependsOn: 'javadoc') {
+    from javadoc.destinationDir
+    into 'javadoc'
+}
+
 artifacts {
     archives jar
     archives sourcesJar
