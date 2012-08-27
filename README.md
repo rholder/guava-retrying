@@ -40,3 +40,5 @@ A minimal sample of some of the functionality would look like:
     } catch (ExecutionException e) {
         e.printStackTrace();
     }
+
+Javadoc can be found [here](http://rholder.github.com/guava-retrying/).
