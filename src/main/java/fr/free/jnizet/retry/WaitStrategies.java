@@ -88,6 +88,43 @@ public final class WaitStrategies {
                                             incrementTimeUnit.toMillis(increment));
     }
 
+    /**
+     * Returns a strategy which sleeps for an exponential amount of time after the first failed attempt,
+     * and in exponentially incrementing amounts after each failed attempt up to Long.MAX_VALUE.
+     * @return
+     */
+    public static WaitStrategy exponentialWait() {
+        return new ExponentialWaitStrategy(1, Long.MAX_VALUE);
+    }
+
+    /**
+     * Returns a strategy which sleeps for an exponential amount of time after the first failed attempt,
+     * and in exponentially incrementing amounts after each failed attempt up to the maximumTime.
+     * @param maximumTime the maximum time to sleep
+     * @param maximumTimeUnit the unit of the maximum time
+     * @return
+     */
+    public static WaitStrategy exponentialWait(long maximumTime,
+                                               @Nonnull TimeUnit maximumTimeUnit) {
+        Preconditions.checkNotNull(maximumTimeUnit, "The maximum time unit may not be null");
+        return new ExponentialWaitStrategy(1, maximumTimeUnit.toMillis(maximumTime));
+    }
+
+    /**
+     * Returns a strategy which sleeps for an exponential amount of time after the first failed attempt,
+     * and in exponentially incrementing amounts after each failed attempt up to the maximumTime.
+     * @param multiplier multiply the wait time calculated by this
+     * @param maximumTime the maximum time to sleep
+     * @param maximumTimeUnit the unit of the maximum time
+     * @return
+     */
+    public static WaitStrategy exponentialWait(long multiplier,
+                                               long maximumTime,
+                                               @Nonnull TimeUnit maximumTimeUnit) {
+        Preconditions.checkNotNull(maximumTimeUnit, "The maximum time unit may not be null");
+        return new ExponentialWaitStrategy(multiplier, maximumTimeUnit.toMillis(maximumTime));
+    }
+
     @Immutable
     private static final class FixedWaitStrategy implements WaitStrategy {
         private final long sleepTime;
@@ -142,4 +179,30 @@ public final class WaitStrategies {
             return result >= 0L ? result : 0L;
         }
     }
+
+    @Immutable
+    private static final class ExponentialWaitStrategy implements WaitStrategy {
+        private final long multiplier;
+        private final long maximumWait;
+
+        public ExponentialWaitStrategy(long multiplier,
+                                       long maximumWait) {
+            Preconditions.checkArgument(multiplier > 0L, "multiplier must be > 0 but is %d", multiplier);
+            Preconditions.checkArgument(maximumWait >= 0L, "maximumWait must be >= 0 but is %d", maximumWait);
+            Preconditions.checkArgument(multiplier < maximumWait, "multiplier must be < maximumWait but is %d", multiplier);
+            this.multiplier = multiplier;
+            this.maximumWait = maximumWait;
+        }
+
+        @Override
+        public long computeSleepTime(int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
+            double exp = Math.pow(2, previousAttemptNumber);
+            long result = Math.round(multiplier * exp);
+            if(result > maximumWait) {
+                result = maximumWait;
+            }
+            return result >= 0L ? result : 0L;
+        }
+    }
+
 }

@@ -61,4 +61,41 @@ public class WaitStrategiesTest {
             assertTrue(time <= 2000L);
         }
     }
+
+    @Test
+    public void testExponential() {
+        WaitStrategy exponentialWait = WaitStrategies.exponentialWait();
+        assertTrue(exponentialWait.computeSleepTime(1, 0) == 2);
+        assertTrue(exponentialWait.computeSleepTime(2, 0) == 4);
+        assertTrue(exponentialWait.computeSleepTime(3, 0) == 8);
+        assertTrue(exponentialWait.computeSleepTime(4, 0) == 16);
+        assertTrue(exponentialWait.computeSleepTime(5, 0) == 32);
+        assertTrue(exponentialWait.computeSleepTime(6, 0) == 64);
+    }
+
+    @Test
+    public void testExponentialWithMaximumWait() {
+        WaitStrategy exponentialWait = WaitStrategies.exponentialWait(40, TimeUnit.MILLISECONDS);
+        assertTrue(exponentialWait.computeSleepTime(1, 0) == 2);
+        assertTrue(exponentialWait.computeSleepTime(2, 0) == 4);
+        assertTrue(exponentialWait.computeSleepTime(3, 0) == 8);
+        assertTrue(exponentialWait.computeSleepTime(4, 0) == 16);
+        assertTrue(exponentialWait.computeSleepTime(5, 0) == 32);
+        assertTrue(exponentialWait.computeSleepTime(6, 0) == 40);
+        assertTrue(exponentialWait.computeSleepTime(7, 0) == 40);
+        assertTrue(exponentialWait.computeSleepTime(Integer.MAX_VALUE, 0) == 40);
+    }
+
+    @Test
+    public void testExponentialWithMultiplierAndMaximumWait() {
+        WaitStrategy exponentialWait = WaitStrategies.exponentialWait(1000, 50000, TimeUnit.MILLISECONDS);
+        assertTrue(exponentialWait.computeSleepTime(1, 0) == 2000);
+        assertTrue(exponentialWait.computeSleepTime(2, 0) == 4000);
+        assertTrue(exponentialWait.computeSleepTime(3, 0) == 8000);
+        assertTrue(exponentialWait.computeSleepTime(4, 0) == 16000);
+        assertTrue(exponentialWait.computeSleepTime(5, 0) == 32000);
+        assertTrue(exponentialWait.computeSleepTime(6, 0) == 50000);
+        assertTrue(exponentialWait.computeSleepTime(7, 0) == 50000);
+        assertTrue(exponentialWait.computeSleepTime(Integer.MAX_VALUE, 0) == 50000);
+    }
 }
