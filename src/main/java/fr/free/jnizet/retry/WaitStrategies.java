@@ -91,7 +91,6 @@ public final class WaitStrategies {
     /**
      * Returns a strategy which sleeps for an exponential amount of time after the first failed attempt,
      * and in exponentially incrementing amounts after each failed attempt up to Long.MAX_VALUE.
-     * @return
      */
     public static WaitStrategy exponentialWait() {
         return new ExponentialWaitStrategy(1, Long.MAX_VALUE);
@@ -102,7 +101,6 @@ public final class WaitStrategies {
      * and in exponentially incrementing amounts after each failed attempt up to the maximumTime.
      * @param maximumTime the maximum time to sleep
      * @param maximumTimeUnit the unit of the maximum time
-     * @return
      */
     public static WaitStrategy exponentialWait(long maximumTime,
                                                @Nonnull TimeUnit maximumTimeUnit) {
@@ -116,7 +114,6 @@ public final class WaitStrategies {
      * @param multiplier multiply the wait time calculated by this
      * @param maximumTime the maximum time to sleep
      * @param maximumTimeUnit the unit of the maximum time
-     * @return
      */
     public static WaitStrategy exponentialWait(long multiplier,
                                                long maximumTime,
