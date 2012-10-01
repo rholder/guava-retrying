@@ -9,13 +9,13 @@ Maven
     <dependency>
       <groupId>com.github.rholder</groupId>
       <artifactId>guava-retrying</artifactId>
-      <version>1.0.0</version>
+      <version>1.0.1</version>
     </dependency>
 
 Gradle
 --------
 
-    compile "com.github.rholder:guava-retrying:1.0.0"
+    compile "com.github.rholder:guava-retrying:1.0.1"
 
 Example
 --------
