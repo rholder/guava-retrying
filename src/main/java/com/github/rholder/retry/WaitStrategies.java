@@ -1,4 +1,4 @@
-package fr.free.jnizet.retry;
+package com.github.rholder.retry;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -9,7 +9,7 @@ import javax.annotation.concurrent.Immutable;
 import com.google.common.base.Preconditions;
 
 /**
- * Factory class for instanced of {@link WaitStrategy}
+ * Factory class for instances of {@link WaitStrategy}.
  * @author JB
  */
 public final class WaitStrategies {
@@ -20,15 +20,15 @@ public final class WaitStrategies {
     }
 
     /**
-     * Returns a strategy consisting in not sleeping before retrying
+     * Returns a strategy that doesn't sleep at all before retrying.
      */
     public static WaitStrategy noWait() {
         return NO_WAIT_STRATEGY;
     }
 
     /**
-     * Returns a strategy consisting in sleeping a fixed amount of time
-     * before retrying
+     * Returns a strategy that sleeps a fixed amount of time before retrying.
+     *
      * @param sleepTime the time to sleep
      * @param timeUnit the unit of the time to sleep
      * @throws IllegalStateException if the sleep time is &lt; 0.
@@ -39,8 +39,8 @@ public final class WaitStrategies {
     }
 
     /**
-     * Returns a strategy consisting in sleeping a random amount of time
-     * before retrying
+     * Returns a strategy that sleeps a random amount of time before retrying.
+     *
      * @param maximumTime the maximum time to sleep
      * @param timeUnit the unit of the maximum time
      * @throws IllegalStateException if the maximum sleep time is &lt;= 0.
@@ -51,8 +51,8 @@ public final class WaitStrategies {
     }
 
     /**
-     * Returns a strategy consisting in sleeping a random amount of time
-     * before retrying
+     * Returns a strategy that sleeps a random amount of time before retrying.
+     *
      * @param minimumTime the minimum time to sleep
      * @param minimumTimeUnit the unit of the minimum time
      * @param maximumTime the maximum time to sleep
@@ -71,8 +71,10 @@ public final class WaitStrategies {
     }
 
     /**
-     * Returns a strategy consisting in sleeping a fixed amount of time after the first failed attempt,
-     * and in incrementing the amount of time after each failed attempt
+     * Returns a strategy that sleeps a fixed amount of time after the first
+     * failed attempt, and in incrementing the amounts of time after each
+     * failed attempt.
+     *
      * @param initialSleepTime the time to sleep before retrying the first time
      * @param initialSleepTimeUnit the unit of the initial sleep time
      * @param increment the increment added to the previous sleep time after each failed attempt
@@ -99,6 +101,7 @@ public final class WaitStrategies {
     /**
      * Returns a strategy which sleeps for an exponential amount of time after the first failed attempt,
      * and in exponentially incrementing amounts after each failed attempt up to the maximumTime.
+     *
      * @param maximumTime the maximum time to sleep
      * @param maximumTimeUnit the unit of the maximum time
      */
@@ -111,6 +114,7 @@ public final class WaitStrategies {
     /**
      * Returns a strategy which sleeps for an exponential amount of time after the first failed attempt,
      * and in exponentially incrementing amounts after each failed attempt up to the maximumTime.
+     *
      * @param multiplier multiply the wait time calculated by this
      * @param maximumTime the maximum time to sleep
      * @param maximumTimeUnit the unit of the maximum time
@@ -201,5 +205,4 @@ public final class WaitStrategies {
             return result >= 0L ? result : 0L;
         }
     }
-
 }
