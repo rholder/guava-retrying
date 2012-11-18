@@ -1,8 +1,11 @@
 ##What is this?
-This is a fork of the excellent RetryerBuilder code posted to
-http://code.google.com/p/guava-libraries/issues/detail?id=490 by Jean-Baptiste Nizet (JB).  I've added a Gradle build
-for pushing it up to my little corner of Maven Central so that others can easily pull it into their existing projects
-with minimal effort.  It also includes an [exponential backoff WaitStrategy](http://rholder.github.com/guava-retrying/com/github/rholder/retry/WaitStrategies.html)
+The guava-retrying module provides a general purpose method for retrying arbitrary Java code with specific stop, retry,
+and exception handling capabilities that are enhanced by Guava's predicate matching.
+
+This is a fork of the excellent RetryerBuilder code posted [here](http://code.google.com/p/guava-libraries/issues/detail?id=490)
+by Jean-Baptiste Nizet (JB).  I've added a Gradle build for pushing it up to my little corner of Maven Central so that
+others can easily pull it into their existing projects with minimal effort.  It also includes an
+[exponential backoff WaitStrategy](http://rholder.github.com/guava-retrying/com/github/rholder/retry/WaitStrategies.html)
 that might be useful for situations where more well-behaved service polling is preferred.
 
 ##Maven
@@ -15,9 +18,9 @@ that might be useful for situations where more well-behaved service polling is p
 
 ##Gradle
 
-    compile "com.github.rholder:guava-retrying:1.0.1"
+    compile "com.github.rholder:guava-retrying:1.0.2"
 
-##Example
+##Quickstart
 A minimal sample of some of the functionality would look like:
 
     Callable<Boolean> callable = new Callable<Boolean>() {
@@ -40,11 +43,22 @@ A minimal sample of some of the functionality would look like:
         e.printStackTrace();
     }
 
+##Exponential Backoff
+Create a Retryer that retries forever, waiting after every failed retry in increasing exponential backoff intervals
+until at most 5 minutes. After 5 minutes, retry from then on in 5 minute intervals.
+
+    Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
+            .retryIfExceptionOfType(IOException.class)
+            .retryIfRuntimeException()
+            .withWaitStrategy(WaitStrategies.exponentialWait(100, 5, TimeUnit.MINUTES))
+            .withStopStrategy(StopStrategies.neverStop())
+            .build();
+
 ##Documentation
 Javadoc can be found [here](http://rholder.github.com/guava-retrying/).
 
 ##Building from source
-The guava-retyring module uses a [Gradle](http://gradle.org)-based build system. In the instructions
+The guava-retrying module uses a [Gradle](http://gradle.org)-based build system. In the instructions
 below, [`./gradlew`](http://vimeo.com/34436402) is invoked from the root of the source tree and serves as
 a cross-platform, self-contained bootstrap mechanism for the build. The only
 prerequisites are [Git](https://help.github.com/articles/set-up-git) and JDK 1.6+.
