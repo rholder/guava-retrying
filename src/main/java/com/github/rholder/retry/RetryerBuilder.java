@@ -1,21 +1,23 @@
 package com.github.rholder.retry;
 
-import javax.annotation.Nonnull;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
+import javax.annotation.Nonnull;
+
 /**
  * A builder used to configure and create a {@link Retryer}.
  * @author JB
+ * @author Jason Dunkelberger (dirkraft)
  *
  * @param <V> the type of the retryer return value
  */
 public class RetryerBuilder<V> {
+    private AttemptTimeLimiter<V> attemptTimeLimiter;
     private StopStrategy stopStrategy;
     private WaitStrategy waitStrategy;
-    private Predicate<Attempt<V>> rejectionPredicate = Predicates.<Attempt<V>>alwaysFalse();
+    private Predicate<Attempt<V>> rejectionPredicate = Predicates.alwaysFalse();
 
     private RetryerBuilder() {
     }
@@ -53,6 +55,17 @@ public class RetryerBuilder<V> {
         Preconditions.checkNotNull(stopStrategy, "stopStrategy may not be null");
         Preconditions.checkState(this.stopStrategy == null, "a stop strategy has already been set %s", this.stopStrategy);
         this.stopStrategy = stopStrategy;
+        return this;
+    }
+
+    /**
+     * Configures the retryer to limit the duration of any particular attempt by the given duration.
+     * @param attemptTimeLimiter to apply to each attempt
+     * @return <code>this</code>
+     */
+    public RetryerBuilder<V> withAttemptTimeLimiter(@Nonnull AttemptTimeLimiter<V> attemptTimeLimiter) {
+        Preconditions.checkNotNull(attemptTimeLimiter);
+        this.attemptTimeLimiter = attemptTimeLimiter;
         return this;
     }
 
@@ -117,10 +130,11 @@ public class RetryerBuilder<V> {
      * @return the built retryer.
      */
     public Retryer<V> build() {
+        AttemptTimeLimiter<V> theAttemptTimeLimiter = attemptTimeLimiter == null ? AttemptTimeLimiters.<V>noTimeLimit() : attemptTimeLimiter;
         StopStrategy theStopStrategy = stopStrategy == null ? StopStrategies.neverStop() : stopStrategy;
         WaitStrategy theWaitStrategy = waitStrategy == null ? WaitStrategies.noWait() : waitStrategy;
 
-        return new Retryer<V>(theStopStrategy, theWaitStrategy, rejectionPredicate);
+        return new Retryer<V>(theAttemptTimeLimiter, theStopStrategy, theWaitStrategy, rejectionPredicate);
     }
 
     private static final class ExceptionClassPredicate<V> implements Predicate<Attempt<V>> {
