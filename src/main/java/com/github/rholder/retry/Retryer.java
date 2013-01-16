@@ -1,13 +1,12 @@
 package com.github.rholder.retry;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 /**
  * A retryer, which executes a call, and retries it until it succeeds, or
@@ -21,11 +20,13 @@ import com.google.common.base.Predicate;
  * is thread-safe, provided the arguments passed to its constructor are thread-safe.
  *
  * @author JB
+ * @author Jason Dunkelberger (dirkraft)
  * @param <V> the type of the call return value
  */
 public final class Retryer<V> {
     private final StopStrategy stopStrategy;
     private final WaitStrategy waitStrategy;
+    private final AttemptTimeLimiter<V> attemptTimeLimiter;
     private final Predicate<Attempt<V>> rejectionPredicate;
 
     /**
@@ -39,10 +40,29 @@ public final class Retryer<V> {
     public Retryer(@Nonnull StopStrategy stopStrategy,
                    @Nonnull WaitStrategy waitStrategy,
                    @Nonnull Predicate<Attempt<V>> rejectionPredicate) {
+
+        this(AttemptTimeLimiters.<V>noTimeLimit(), stopStrategy, waitStrategy, rejectionPredicate);
+    }
+
+    /**
+     * Constructor
+     * @param attemptTimeLimiter to prevent from any single attempt from spinning infinitely
+     * @param stopStrategy the strategy used to decide when the retryer must stop retrying
+     * @param waitStrategy the strategy used to decide how much time to sleep between attempts
+     * @param rejectionPredicate the predicate used to decide if the attempt must be rejected
+     * or not. If an attempt is rejected, the retryer will retry the call, unless the stop
+     * strategy indicates otherwise or the thread is interrupted.
+     */
+    public Retryer(@Nonnull AttemptTimeLimiter<V> attemptTimeLimiter,
+                   @Nonnull StopStrategy stopStrategy,
+                   @Nonnull WaitStrategy waitStrategy,
+                   @Nonnull Predicate<Attempt<V>> rejectionPredicate) {
+        Preconditions.checkNotNull(attemptTimeLimiter, "timeLimiter may not be null");
         Preconditions.checkNotNull(stopStrategy, "stopStrategy may not be null");
         Preconditions.checkNotNull(waitStrategy, "waitStrategy may not be null");
         Preconditions.checkNotNull(rejectionPredicate, "waitStrategy may not be null");
 
+        this.attemptTimeLimiter = attemptTimeLimiter;
         this.stopStrategy = stopStrategy;
         this.waitStrategy = waitStrategy;
         this.rejectionPredicate = rejectionPredicate;
@@ -65,7 +85,7 @@ public final class Retryer<V> {
         for (int attemptNumber = 1; ; attemptNumber++) {
             Attempt<V> attempt;
             try {
-                V result = callable.call();
+                V result = attemptTimeLimiter.call(callable);
                 attempt = new ResultAttempt<V>(result);
             }
             catch (Throwable t) {
