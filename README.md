@@ -13,12 +13,12 @@ that might be useful for situations where more well-behaved service polling is p
     <dependency>
       <groupId>com.github.rholder</groupId>
       <artifactId>guava-retrying</artifactId>
-      <version>1.0.2</version>
+      <version>1.0.3</version>
     </dependency>
 
 ##Gradle
 
-    compile "com.github.rholder:guava-retrying:1.0.2"
+    compile "com.github.rholder:guava-retrying:1.0.3"
 
 ##Quickstart
 A minimal sample of some of the functionality would look like:
@@ -76,3 +76,6 @@ prerequisites are [Git](https://help.github.com/articles/set-up-git) and JDK 1.6
 The guava-retrying module is released under version 2.0 of the
 [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
 
+##Contributors
+* Jean-Baptiste Nizet (JB)
+* Jason Dunkelberger (dirkraft)
