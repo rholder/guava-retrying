@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rholder/guava-retrying.png)](https://travis-ci.org/rholder/guava-retrying)
+
 ##What is this?
 The guava-retrying module provides a general purpose method for retrying arbitrary Java code with specific stop, retry,
 and exception handling capabilities that are enhanced by Guava's predicate matching.
