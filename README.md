@@ -11,20 +11,23 @@ others can easily pull it into their existing projects with minimal effort.  It 
 that might be useful for situations where more well-behaved service polling is preferred.
 
 ##Maven
-
+```xml
     <dependency>
       <groupId>com.github.rholder</groupId>
       <artifactId>guava-retrying</artifactId>
       <version>1.0.3</version>
     </dependency>
+```
 
 ##Gradle
-
+```groovy
     compile "com.github.rholder:guava-retrying:1.0.3"
+```
 
 ##Quickstart
 A minimal sample of some of the functionality would look like:
 
+```java
     Callable<Boolean> callable = new Callable<Boolean>() {
         public Boolean call() throws Exception {
             return true; // do something useful here
@@ -44,17 +47,20 @@ A minimal sample of some of the functionality would look like:
     } catch (ExecutionException e) {
         e.printStackTrace();
     }
+```
 
 ##Exponential Backoff
 Create a Retryer that retries forever, waiting after every failed retry in increasing exponential backoff intervals
 until at most 5 minutes. After 5 minutes, retry from then on in 5 minute intervals.
 
+```java
     Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
             .retryIfExceptionOfType(IOException.class)
             .retryIfRuntimeException()
             .withWaitStrategy(WaitStrategies.exponentialWait(100, 5, TimeUnit.MINUTES))
             .withStopStrategy(StopStrategies.neverStop())
             .build();
+```
 
 ##Documentation
 Javadoc can be found [here](http://rholder.github.com/guava-retrying/).
