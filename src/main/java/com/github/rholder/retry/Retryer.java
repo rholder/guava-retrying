@@ -103,8 +103,7 @@ public final class Retryer<V> {
             try {
                 V result = attemptTimeLimiter.call(callable);
                 attempt = new ResultAttempt<V>(result);
-            }
-            catch (Throwable t) {
+            } catch (Throwable t) {
                 attempt = new ExceptionAttempt<V>(t);
             }
             if (!rejectionPredicate.apply(attempt)) {
@@ -113,13 +112,11 @@ public final class Retryer<V> {
             long delaySinceFirstAttemptInMillis = System.currentTimeMillis() - startTime;
             if (stopStrategy.shouldStop(attemptNumber, delaySinceFirstAttemptInMillis)) {
                 throw new RetryException(attemptNumber, attempt);
-            }
-            else {
+            } else {
                 long sleepTime = waitStrategy.computeSleepTime(attemptNumber, System.currentTimeMillis() - startTime);
                 try {
                     Thread.sleep(sleepTime);
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     throw new RetryException(attemptNumber, attempt);
                 }
