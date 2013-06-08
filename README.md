@@ -15,13 +15,13 @@ that might be useful for situations where more well-behaved service polling is p
     <dependency>
       <groupId>com.github.rholder</groupId>
       <artifactId>guava-retrying</artifactId>
-      <version>1.0.3</version>
+      <version>1.0.4</version>
     </dependency>
 ```
 
 ##Gradle
 ```groovy
-    compile "com.github.rholder:guava-retrying:1.0.3"
+    compile "com.github.rholder:guava-retrying:1.0.4"
 ```
 
 ##Quickstart
