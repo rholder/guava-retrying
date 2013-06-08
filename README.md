@@ -87,3 +87,4 @@ The guava-retrying module is released under version 2.0 of the
 ##Contributors
 * Jean-Baptiste Nizet (JB)
 * Jason Dunkelberger (dirkraft)
+* Diwaker Gupta (diwakergupta)

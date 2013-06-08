@@ -1,3 +1,7 @@
+##1.0.4 - 2013-07-08
+* Added tested Guava version range from 10.x.x - 14.0.1
+* Added Exception cause propagation to RetryException to fix #3
+
 ##1.0.3 - 2013-01-16
 * Added time limit per attempt in a Retryer (dirkraft)
 * Adding license text
