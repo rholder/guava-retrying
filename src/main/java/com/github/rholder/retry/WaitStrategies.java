@@ -16,13 +16,12 @@
 
 package com.github.rholder.retry;
 
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
+import com.google.common.base.Preconditions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
-
-import com.google.common.base.Preconditions;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Factory class for instances of {@link WaitStrategy}.
@@ -142,6 +141,42 @@ public final class WaitStrategies {
         return new ExponentialWaitStrategy(multiplier, maximumTimeUnit.toMillis(maximumTime));
     }
 
+    /**
+     * Returns a strategy which sleeps for an increasing amount of time after the first failed attempt,
+     * and in Fibonacci increments after each failed attempt up to {@link Long#MAX_VALUE}.
+     */
+    public static WaitStrategy fibonacciWait() {
+        return new FibonacciWaitStrategy(1, Long.MAX_VALUE);
+    }
+
+    /**
+     * Returns a strategy which sleeps for an increasing amount of time after the first failed attempt,
+     * and in Fibonacci increments after each failed attempt up to the {@code maximumTime}.
+     *
+     * @param maximumTime the maximum time to sleep
+     * @param maximumTimeUnit the unit of the maximum time
+     */
+    public static WaitStrategy fibonacciWait(long maximumTime,
+                                             @Nonnull TimeUnit maximumTimeUnit) {
+        Preconditions.checkNotNull(maximumTimeUnit, "The maximum time unit may not be null");
+        return new FibonacciWaitStrategy(1, maximumTimeUnit.toMillis(maximumTime));
+    }
+
+    /**
+     * Returns a strategy which sleeps for an increasing amount of time after the first failed attempt,
+     * and in Fibonacci increments after each failed attempt up to the {@code maximumTime}.
+     *
+     * @param multiplier multiply the wait time calculated by this
+     * @param maximumTime the maximum time to sleep
+     * @param maximumTimeUnit the unit of the maximum time
+     */
+    public static WaitStrategy fibonacciWait(long multiplier,
+                                             long maximumTime,
+                                             @Nonnull TimeUnit maximumTimeUnit) {
+        Preconditions.checkNotNull(maximumTimeUnit, "The maximum time unit may not be null");
+        return new FibonacciWaitStrategy(multiplier, maximumTimeUnit.toMillis(maximumTime));
+    }
+
     @Immutable
     private static final class FixedWaitStrategy implements WaitStrategy {
         private final long sleepTime;
@@ -219,6 +254,49 @@ public final class WaitStrategies {
                 result = maximumWait;
             }
             return result >= 0L ? result : 0L;
+        }
+    }
+
+    @Immutable
+    private static final class FibonacciWaitStrategy implements WaitStrategy {
+        private final long multiplier;
+        private final long maximumWait;
+
+        public FibonacciWaitStrategy(long multiplier, long maximumWait) {
+            Preconditions.checkArgument(multiplier > 0L, "multiplier must be > 0 but is %d", multiplier);
+            Preconditions.checkArgument(maximumWait >= 0L, "maximumWait must be >= 0 but is %d", maximumWait);
+            Preconditions.checkArgument(multiplier < maximumWait, "multiplier must be < maximumWait but is %d", multiplier);
+            this.multiplier = multiplier;
+            this.maximumWait = maximumWait;
+        }
+
+        @Override
+        public long computeSleepTime(int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
+            long fib = fib(previousAttemptNumber);
+            long result = multiplier * fib;
+
+            if(result > maximumWait || result < 0L) {
+                result = maximumWait;
+            }
+
+            return result >= 0L ? result : 0L;
+        }
+
+        private long fib(long n) {
+            if (n == 0L) return 0L;
+            if (n == 1L) return 1L;
+
+            long prevPrev = 0L;
+            long prev = 1L;
+            long result = 0L;
+
+            for (long i = 2L; i <= n; i++) {
+                result = prev + prevPrev;
+                prevPrev = prev;
+                prev = result;
+            }
+
+            return result;
         }
     }
 }

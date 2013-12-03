@@ -16,15 +16,14 @@
 
 package com.github.rholder.retry;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import com.google.common.collect.Sets;
+import org.junit.Test;
 
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
-
-import com.google.common.collect.Sets;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class WaitStrategiesTest {
 
@@ -113,5 +112,42 @@ public class WaitStrategiesTest {
         assertTrue(exponentialWait.computeSleepTime(6, 0) == 50000);
         assertTrue(exponentialWait.computeSleepTime(7, 0) == 50000);
         assertTrue(exponentialWait.computeSleepTime(Integer.MAX_VALUE, 0) == 50000);
+    }
+
+    @Test
+    public void testFibonacci() {
+        WaitStrategy fibonacciWait = WaitStrategies.fibonacciWait();
+        assertTrue(fibonacciWait.computeSleepTime(1, 0L) == 1L);
+        assertTrue(fibonacciWait.computeSleepTime(2, 0L) == 1L);
+        assertTrue(fibonacciWait.computeSleepTime(3, 0L) == 2L);
+        assertTrue(fibonacciWait.computeSleepTime(4, 0L) == 3L);
+        assertTrue(fibonacciWait.computeSleepTime(5, 0L) == 5L);
+        assertTrue(fibonacciWait.computeSleepTime(6, 0L) == 8L);
+    }
+
+    @Test
+    public void testFibonacciWithMaximumWait() {
+        WaitStrategy fibonacciWait = WaitStrategies.fibonacciWait(10L, TimeUnit.MILLISECONDS);
+        assertTrue(fibonacciWait.computeSleepTime(1, 0L) == 1L);
+        assertTrue(fibonacciWait.computeSleepTime(2, 0L) == 1L);
+        assertTrue(fibonacciWait.computeSleepTime(3, 0L) == 2L);
+        assertTrue(fibonacciWait.computeSleepTime(4, 0L) == 3L);
+        assertTrue(fibonacciWait.computeSleepTime(5, 0L) == 5L);
+        assertTrue(fibonacciWait.computeSleepTime(6, 0L) == 8L);
+        assertTrue(fibonacciWait.computeSleepTime(7, 0L) == 10L);
+        assertTrue(fibonacciWait.computeSleepTime(Integer.MAX_VALUE, 0L) == 10L);
+    }
+
+    @Test
+    public void testFibonacciWithMultiplierAndMaximumWait() {
+        WaitStrategy fibonacciWait = WaitStrategies.fibonacciWait(1000L, 50000L, TimeUnit.MILLISECONDS);
+        assertTrue(fibonacciWait.computeSleepTime(1, 0L) == 1000L);
+        assertTrue(fibonacciWait.computeSleepTime(2, 0L) == 1000L);
+        assertTrue(fibonacciWait.computeSleepTime(3, 0L) == 2000L);
+        assertTrue(fibonacciWait.computeSleepTime(4, 0L) == 3000L);
+        assertTrue(fibonacciWait.computeSleepTime(5, 0L) == 5000L);
+        assertTrue(fibonacciWait.computeSleepTime(6, 0L) == 8000L);
+        assertTrue(fibonacciWait.computeSleepTime(7, 0L) == 13000L);
+        assertTrue(fibonacciWait.computeSleepTime(Integer.MAX_VALUE, 0L) == 50000L);
     }
 }
