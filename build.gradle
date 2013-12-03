@@ -52,7 +52,7 @@ dependencies {
 
 // enable Gradle Wrapper support for bootstrapping with specific version
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.5'
+    gradleVersion = '1.9'
 }
 
 //********* artifact signing *********
