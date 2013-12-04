@@ -9,7 +9,7 @@ sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
 group = 'com.github.rholder'
-version = '1.0.5'
+version = '1.0.6-SNAPSHOT'
 ext.packaging = 'jar'
 
 repositories {
