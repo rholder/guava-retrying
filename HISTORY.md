@@ -1,10 +1,17 @@
+##1.0.5 - 2013-12-04
+* Added Javadoc for all versions
+* Added FibonacciWaitStrategy (joschi)
+* Updated tested Guava version range from 10.x.x - 15.0 (joschi)
+* Updated all dependencies (joschi)
+* Updated to Gradle 1.9 (joschi)
+
 ##1.0.4 - 2013-07-08
 * Added tested Guava version range from 10.x.x - 14.0.1
 * Added Exception cause propagation to RetryException to fix #3
 
 ##1.0.3 - 2013-01-16
 * Added time limit per attempt in a Retryer (dirkraft)
-* Adding license text
+* Added license text
 
 ##1.0.2 - 2012-11-22
 * Added Gradle wrapper support
