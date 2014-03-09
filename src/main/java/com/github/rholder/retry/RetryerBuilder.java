@@ -61,8 +61,7 @@ public class RetryerBuilder<V> {
     }
 
     /**
-     * Sets the stop strategy used to decide when to stop retrying. The default strategy
-     * is to not stop at all ({@link com.github.rholder.retry.StopStrategies.NeverStopStrategy}) .
+     * Sets the stop strategy used to decide when to stop retrying. The default strategy is to not stop at all .
      * @param stopStrategy the strategy used to decide when to stop retrying
      * @return <code>this</code>
      * @throws IllegalStateException if a stop strategy has already been set.
