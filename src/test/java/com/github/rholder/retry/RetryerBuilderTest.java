@@ -379,6 +379,30 @@ public class RetryerBuilderTest {
         assertTrue(wrapped.call());
     }
 
+    @Test
+    public void testWhetherBuilderFailsForNullStopStrategy() {
+        try {
+            RetryerBuilder.<Void>newBuilder()
+                    .withStopStrategy(null)
+                    .build();
+            fail("Exepcted to fail for null stop strategy");
+        } catch (NullPointerException exception) {
+            assertTrue(exception.getMessage().contains("stopStrategy may not be null"));
+        }
+    }
+
+    @Test
+    public void testWhetherBuilderFailsForNullWaitStrategy() {
+        try {
+            RetryerBuilder.<Void>newBuilder()
+                    .withWaitStrategy(null)
+                    .build();
+            fail("Exepcted to fail for null wait strategy");
+        } catch (NullPointerException exception) {
+            assertTrue(exception.getMessage().contains("waitStrategy may not be null"));
+        }
+    }
+
     private Callable<Boolean> alwaysNull(final CountDownLatch latch) {
         return new Callable<Boolean>() {
             @Override
