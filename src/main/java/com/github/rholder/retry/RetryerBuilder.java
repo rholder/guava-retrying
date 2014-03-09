@@ -40,6 +40,7 @@ public class RetryerBuilder<V> {
 
     /**
      * Constructs a new builder
+     * @param <V> The type of result, the callable task is supposed to return.
      * @return the new builder
      */
     public static <V> RetryerBuilder<V> newBuilder() {

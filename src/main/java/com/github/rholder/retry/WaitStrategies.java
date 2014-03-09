@@ -36,6 +36,7 @@ public final class WaitStrategies {
 
     /**
      * Returns a strategy that doesn't sleep at all before retrying.
+     * @return A wait strategy which doesn't wait between retries
      */
     public static WaitStrategy noWait() {
         return NO_WAIT_STRATEGY;
@@ -46,6 +47,7 @@ public final class WaitStrategies {
      *
      * @param sleepTime the time to sleep
      * @param timeUnit the unit of the time to sleep
+     * @return A wait strategy with fixed {@code sleepTime}
      * @throws IllegalStateException if the sleep time is &lt; 0.
      */
     public static WaitStrategy fixedWait(long sleepTime, @Nonnull TimeUnit timeUnit) throws IllegalStateException {
@@ -58,6 +60,7 @@ public final class WaitStrategies {
      *
      * @param maximumTime the maximum time to sleep
      * @param timeUnit the unit of the maximum time
+     * @return A wait strategy with random wait time
      * @throws IllegalStateException if the maximum sleep time is &lt;= 0.
      */
     public static WaitStrategy randomWait(long maximumTime, @Nonnull TimeUnit timeUnit) {
@@ -72,6 +75,7 @@ public final class WaitStrategies {
      * @param minimumTimeUnit the unit of the minimum time
      * @param maximumTime the maximum time to sleep
      * @param maximumTimeUnit the unit of the maximum time
+     * @return A wait strategy with random wait time
      * @throws IllegalStateException if the minimum sleep time is &lt; 0, or if the
      * maximum sleep time is less than (or equals to) the minimum.
      */
@@ -94,6 +98,7 @@ public final class WaitStrategies {
      * @param initialSleepTimeUnit the unit of the initial sleep time
      * @param increment the increment added to the previous sleep time after each failed attempt
      * @param incrementTimeUnit the unit of the increment
+     * @return A wait strategy with wait time following the incremental pattern.
      */
     public static WaitStrategy incrementingWait(long initialSleepTime,
                                                 @Nonnull TimeUnit initialSleepTimeUnit,
@@ -108,6 +113,8 @@ public final class WaitStrategies {
     /**
      * Returns a strategy which sleeps for an exponential amount of time after the first failed attempt,
      * and in exponentially incrementing amounts after each failed attempt up to Long.MAX_VALUE.
+     *
+     * @return A wait strategy with wait time following the exponential pattern.
      */
     public static WaitStrategy exponentialWait() {
         return new ExponentialWaitStrategy(1, Long.MAX_VALUE);
@@ -119,6 +126,7 @@ public final class WaitStrategies {
      *
      * @param maximumTime the maximum time to sleep
      * @param maximumTimeUnit the unit of the maximum time
+     * @return A wait strategy with wait time following the exponential pattern.
      */
     public static WaitStrategy exponentialWait(long maximumTime,
                                                @Nonnull TimeUnit maximumTimeUnit) {
@@ -129,10 +137,13 @@ public final class WaitStrategies {
     /**
      * Returns a strategy which sleeps for an exponential amount of time after the first failed attempt,
      * and in exponentially incrementing amounts after each failed attempt up to the maximumTime.
+     * The wait time between the retries can be controlled by the multiplier.
+     * nextWaitTime = exponentialIncrement * {@code multiplier}.
      *
      * @param multiplier multiply the wait time calculated by this
      * @param maximumTime the maximum time to sleep
      * @param maximumTimeUnit the unit of the maximum time
+     * @return A wait strategy with wait time following the exponential pattern.
      */
     public static WaitStrategy exponentialWait(long multiplier,
                                                long maximumTime,
@@ -144,6 +155,8 @@ public final class WaitStrategies {
     /**
      * Returns a strategy which sleeps for an increasing amount of time after the first failed attempt,
      * and in Fibonacci increments after each failed attempt up to {@link Long#MAX_VALUE}.
+     *
+     * @return A wait strategy with wait time following the fibonacci pattern.
      */
     public static WaitStrategy fibonacciWait() {
         return new FibonacciWaitStrategy(1, Long.MAX_VALUE);
@@ -155,6 +168,7 @@ public final class WaitStrategies {
      *
      * @param maximumTime the maximum time to sleep
      * @param maximumTimeUnit the unit of the maximum time
+     * @return  A wait strategy with wait time following the fibonacci pattern.
      */
     public static WaitStrategy fibonacciWait(long maximumTime,
                                              @Nonnull TimeUnit maximumTimeUnit) {
@@ -165,10 +179,13 @@ public final class WaitStrategies {
     /**
      * Returns a strategy which sleeps for an increasing amount of time after the first failed attempt,
      * and in Fibonacci increments after each failed attempt up to the {@code maximumTime}.
+     * The wait time between the retries can be controlled by the multiplier.
+     * nextWaitTime = fibonacciIncrement * {@code multiplier}.
      *
      * @param multiplier multiply the wait time calculated by this
      * @param maximumTime the maximum time to sleep
      * @param maximumTimeUnit the unit of the maximum time
+     * @return A wait strategy with wait time following the fibonacci pattern.
      */
     public static WaitStrategy fibonacciWait(long multiplier,
                                              long maximumTime,

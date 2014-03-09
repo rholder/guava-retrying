@@ -61,6 +61,7 @@ public final class RetryException extends Exception {
 
     /**
      * Returns the number of failed attempts
+     * @return Gets the number of failed attempts
      */
     public int getNumberOfFailedAttempts() {
         return numberOfFailedAttempts;
@@ -68,6 +69,7 @@ public final class RetryException extends Exception {
 
     /**
      * Returns the last failed attempt
+     * @return The last failed attempt.
      */
     public Attempt<?> getLastFailedAttempt() {
         return lastFailedAttempt;
