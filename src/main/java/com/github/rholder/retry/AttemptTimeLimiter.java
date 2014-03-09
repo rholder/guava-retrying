@@ -28,6 +28,7 @@ public interface AttemptTimeLimiter<V> {
     /**
      * @param callable to subject to the time limit
      * @return the return of the given callable
+     * @throws java.lang.Exception All exceptions that can happen because of this invocation.
      */
     V call(Callable<V> callable) throws Exception;
 }

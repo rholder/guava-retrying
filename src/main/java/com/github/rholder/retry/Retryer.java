@@ -89,6 +89,8 @@ public final class Retryer<V> {
      * accepts the attempt, the stop strategy is used to decide if a new attempt
      * must be made. Then the wait strategy is used to decide how must time to sleep,
      * and a new attempt is made.
+     * @param callable The callable task which need to be executed.
+     * @return The computed result of the given callable.
      * @throws ExecutionException if the given callable throws an exception, and the
      * rejection predicate considers the attempt as successful. The original exception
      * is wrapped into an ExecutionException.
@@ -128,6 +130,7 @@ public final class Retryer<V> {
      * Wraps the given callable into a {@link RetryerCallable}, which can be submitted to an executor.
      * The returned callable will use this retryer to call the given callable
      * @param callable the callable to wrap
+     * @return A {@link RetryerCallable} containing and retryer and a callable.
      */
     public RetryerCallable<V> wrap(Callable<V> callable) {
         return new RetryerCallable<V>(this, callable);
