@@ -40,6 +40,7 @@ public class RetryerBuilder<V> {
 
     /**
      * Constructs a new builder
+     * @param <V> The type of result, the callable task is supposed to return.
      * @return the new builder
      */
     public static <V> RetryerBuilder<V> newBuilder() {
@@ -61,13 +62,12 @@ public class RetryerBuilder<V> {
     }
 
     /**
-     * Sets the wait strategy used to decide . The default strategy
-     * is to not sleep at all between attempts.
-     * @param stopStrategy the strategy used to sleep between failed attempts
+     * Sets the stop strategy used to decide when to stop retrying. The default strategy is to not stop at all .
+     * @param stopStrategy the strategy used to decide when to stop retrying
      * @return <code>this</code>
      * @throws IllegalStateException if a stop strategy has already been set.
      */
-    public RetryerBuilder<V> withStopStrategy(StopStrategy stopStrategy) {
+    public RetryerBuilder<V> withStopStrategy(@Nonnull StopStrategy stopStrategy) throws IllegalStateException{
         Preconditions.checkNotNull(stopStrategy, "stopStrategy may not be null");
         Preconditions.checkState(this.stopStrategy == null, "a stop strategy has already been set %s", this.stopStrategy);
         this.stopStrategy = stopStrategy;

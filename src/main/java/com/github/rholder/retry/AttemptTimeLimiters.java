@@ -36,6 +36,7 @@ public class AttemptTimeLimiters {
     }
 
     /**
+     * @param <V> The type of the computation result.
      * @return an {@link AttemptTimeLimiter} impl which has no time limit
      */
     public static <V> AttemptTimeLimiter<V> noTimeLimit() {
@@ -48,6 +49,7 @@ public class AttemptTimeLimiters {
      * {@link SimpleTimeLimiter#SimpleTimeLimiter(ExecutorService)}, which this AttemptTimeLimiter uses.
      * @param duration that an attempt may persist before being circumvented
      * @param timeUnit of the 'duration' arg
+     * @param <V> The type of the computation result.
      * @return an {@link AttemptTimeLimiter} with a fixed time limit for each attempt
      */
     public static <V> AttemptTimeLimiter<V> fixedTimeLimit(long duration, @Nonnull TimeUnit timeUnit) {
@@ -59,6 +61,7 @@ public class AttemptTimeLimiters {
      * @param duration that an attempt may persist before being circumvented
      * @param timeUnit of the 'duration' arg
      * @param executorService used to enforce time limit
+     * @param <V> The type of the computation result.
      * @return an {@link AttemptTimeLimiter} with a fixed time limit for each attempt
      */
     public static <V> AttemptTimeLimiter<V> fixedTimeLimit(long duration, @Nonnull TimeUnit timeUnit, @Nonnull ExecutorService executorService) {
