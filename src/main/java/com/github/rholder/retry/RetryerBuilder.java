@@ -24,10 +24,10 @@ import javax.annotation.Nonnull;
 
 /**
  * A builder used to configure and create a {@link Retryer}.
+ *
+ * @param <V> result of a {@link Retryer}'s call, the type of the call return value
  * @author JB
  * @author Jason Dunkelberger (dirkraft)
- *
- * @param <V> the type of the retryer return value
  */
 public class RetryerBuilder<V> {
     private AttemptTimeLimiter<V> attemptTimeLimiter;
@@ -40,7 +40,8 @@ public class RetryerBuilder<V> {
 
     /**
      * Constructs a new builder
-     * @param <V> The type of result, the callable task is supposed to return.
+     *
+     * @param <V> result of a {@link Retryer}'s call, the type of the call return value
      * @return the new builder
      */
     public static <V> RetryerBuilder<V> newBuilder() {
@@ -50,6 +51,7 @@ public class RetryerBuilder<V> {
     /**
      * Sets the wait strategy used to decide how long to sleep between failed attempts.
      * The default strategy is to retry immediately after a failed attempt.
+     *
      * @param waitStrategy the strategy used to sleep between failed attempts
      * @return <code>this</code>
      * @throws IllegalStateException if a wait strategy has already been set.
@@ -63,11 +65,12 @@ public class RetryerBuilder<V> {
 
     /**
      * Sets the stop strategy used to decide when to stop retrying. The default strategy is to not stop at all .
+     *
      * @param stopStrategy the strategy used to decide when to stop retrying
      * @return <code>this</code>
      * @throws IllegalStateException if a stop strategy has already been set.
      */
-    public RetryerBuilder<V> withStopStrategy(@Nonnull StopStrategy stopStrategy) throws IllegalStateException{
+    public RetryerBuilder<V> withStopStrategy(@Nonnull StopStrategy stopStrategy) throws IllegalStateException {
         Preconditions.checkNotNull(stopStrategy, "stopStrategy may not be null");
         Preconditions.checkState(this.stopStrategy == null, "a stop strategy has already been set %s", this.stopStrategy);
         this.stopStrategy = stopStrategy;
@@ -76,6 +79,7 @@ public class RetryerBuilder<V> {
 
     /**
      * Configures the retryer to limit the duration of any particular attempt by the given duration.
+     *
      * @param attemptTimeLimiter to apply to each attempt
      * @return <code>this</code>
      */
@@ -88,6 +92,7 @@ public class RetryerBuilder<V> {
     /**
      * Configures the retryer to retry if an exception (i.e. any <code>Exception</code> or subclass
      * of <code>Exception</code>) is thrown by the call.
+     *
      * @return <code>this</code>
      */
     public RetryerBuilder<V> retryIfException() {
@@ -98,6 +103,7 @@ public class RetryerBuilder<V> {
     /**
      * Configures the retryer to retry if a runtime exception (i.e. any <code>RuntimeException</code> or subclass
      * of <code>RuntimeException</code>) is thrown by the call.
+     *
      * @return <code>this</code>
      */
     public RetryerBuilder<V> retryIfRuntimeException() {
@@ -108,6 +114,7 @@ public class RetryerBuilder<V> {
     /**
      * Configures the retryer to retry if an exception of the given class (or subclass of the given class) is
      * thrown by the call.
+     *
      * @param exceptionClass the type of the exception which should cause the retryer to retry
      * @return <code>this</code>
      */
@@ -120,6 +127,7 @@ public class RetryerBuilder<V> {
     /**
      * Configures the retryer to retry if an exception satisfying the given predicate is
      * thrown by the call.
+     *
      * @param exceptionPredicate the predicate which causes a retry if satisfied
      * @return <code>this</code>
      */
@@ -131,8 +139,9 @@ public class RetryerBuilder<V> {
 
     /**
      * Configures the retryer to retry if the result satisfies the given predicate.
+     *
      * @param resultPredicate a predicate applied to the result, and which causes the retryer
-     * to retry if the predicate is satisfied
+     *                        to retry if the predicate is satisfied
      * @return <code>this</code>
      */
     public RetryerBuilder<V> retryIfResult(@Nonnull Predicate<V> resultPredicate) {
@@ -143,6 +152,7 @@ public class RetryerBuilder<V> {
 
     /**
      * Builds the retryer.
+     *
      * @return the built retryer.
      */
     public Retryer<V> build() {
