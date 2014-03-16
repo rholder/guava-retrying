@@ -29,9 +29,9 @@ import java.util.concurrent.ExecutionException;
  * a stop strategy decides to stop retrying. A wait strategy is used to sleep
  * between attempts. The strategy to decide if the call succeeds or not is
  * also configurable.
- * <p/>
+ * <p></p>
  * A retryer can also wrap the callable into a RetryerCallable, which can be submitted to an executor.
- * <p/>
+ * <p></p>
  * Retryer instances are better constructed with a {@link RetryerBuilder}. A retryer
  * is thread-safe, provided the arguments passed to its constructor are thread-safe.
  *
