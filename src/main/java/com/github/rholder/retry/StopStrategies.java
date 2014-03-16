@@ -32,6 +32,7 @@ public final class StopStrategies {
 
     /**
      * Returns a stop strategy which consists in never stopping retrying
+     * @return A stop strategy which never stops.
      */
     public static StopStrategy neverStop() {
         return NEVER_STOP;
@@ -40,6 +41,7 @@ public final class StopStrategies {
     /**
      * Returns a stop strategy which consists in stopping after N failed attempts
      * @param attemptNumber the number of failed attempts before stopping
+     * @return A stop strategy which stops after {@code attemptNumber} attempts
      */
     public static StopStrategy stopAfterAttempt(int attemptNumber) {
         return new StopAfterAttemptStrategy(attemptNumber);
@@ -48,6 +50,7 @@ public final class StopStrategies {
     /**
      * Returns a stop strategy which consists in stopping after a given delay
      * @param delayInMillis the delay, in milliseconds, starting with the start of the first attempt.
+     * @return A stop strategy which stops after {@code delayInMillis} time in milli seconds.
      */
     public static StopStrategy stopAfterDelay(long delayInMillis) {
         return new StopAfterDelayStrategy(delayInMillis);
