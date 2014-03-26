@@ -1,3 +1,8 @@
+##1.0.6 - 2014-03-26
+* Javadoc updates for Java 8 (shasts)
+* Bug from System.nanoTime() (fror), fix in #15
+* Travis CI testing now working for Java 8
+
 ##1.0.5 - 2013-12-04
 * Added Javadoc for all versions
 * Added FibonacciWaitStrategy (joschi)
