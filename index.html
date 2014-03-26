@@ -16,7 +16,7 @@
     <header>
       <div class="container">
         <h1>guava-retrying</h1>
-        <h2>This is a small extension to Google's Guava library to allow for the creation of configurable retrying strategies for an arbitrary function call, such as something that talks to a remote service with flaky uptime.</h2>
+        <h2>This is a small extension to Google&#39;s Guava library to allow for the creation of configurable retrying strategies for an arbitrary function call, such as something that talks to a remote service with flaky uptime.</h2>
 
         <section id="downloads">
           <a href="https://github.com/rholder/guava-retrying/zipball/master" class="btn">Download as .zip</a>
@@ -39,7 +39,7 @@ and exception handling capabilities that are enhanced by Guava's predicate match
 <p>This is a fork of the excellent RetryerBuilder code posted <a href="http://code.google.com/p/guava-libraries/issues/detail?id=490">here</a>
 by Jean-Baptiste Nizet (JB).  I've added a Gradle build for pushing it up to my little corner of Maven Central so that
 others can easily pull it into their existing projects with minimal effort.  It also includes
-exponential and Fibonacci backoff <a href="http://rholder.github.io/guava-retrying/javadoc/1.0.5/com/github/rholder/retry/WaitStrategies.html">WaitStrategies</a>
+exponential and Fibonacci backoff <a href="http://rholder.github.io/guava-retrying/javadoc/1.0.6/com/github/rholder/retry/WaitStrategies.html">WaitStrategies</a>
 that might be useful for situations where more well-behaved service polling is preferred.</p>
 
 <h2>
@@ -48,14 +48,14 @@ that might be useful for situations where more well-behaved service polling is p
 <div class="highlight highlight-xml"><pre>    <span class="nt">&lt;dependency&gt;</span>
       <span class="nt">&lt;groupId&gt;</span>com.github.rholder<span class="nt">&lt;/groupId&gt;</span>
       <span class="nt">&lt;artifactId&gt;</span>guava-retrying<span class="nt">&lt;/artifactId&gt;</span>
-      <span class="nt">&lt;version&gt;</span>1.0.5<span class="nt">&lt;/version&gt;</span>
+      <span class="nt">&lt;version&gt;</span>1.0.6<span class="nt">&lt;/version&gt;</span>
     <span class="nt">&lt;/dependency&gt;</span>
 </pre></div>
 
 <h2>
 <a name="gradle" class="anchor" href="#gradle"><span class="octicon octicon-link"></span></a>Gradle</h2>
 
-<div class="highlight highlight-groovy"><pre>    <span class="n">compile</span> <span class="s2">"com.github.rholder:guava-retrying:1.0.5"</span>
+<div class="highlight highlight-groovy"><pre>    <span class="n">compile</span> <span class="s2">"com.github.rholder:guava-retrying:1.0.6"</span>
 </pre></div>
 
 <h2>
@@ -98,7 +98,7 @@ until at most 5 minutes. After 5 minutes, retry from then on in 5 minute interva
 <div class="highlight highlight-java"><pre><span class="n">Retryer</span><span class="o">&lt;</span><span class="n">Boolean</span><span class="o">&gt;</span> <span class="n">retryer</span> <span class="o">=</span> <span class="n">RetryerBuilder</span><span class="o">.&lt;</span><span class="n">Boolean</span><span class="o">&gt;</span><span class="n">newBuilder</span><span class="o">()</span>
         <span class="o">.</span><span class="na">retryIfExceptionOfType</span><span class="o">(</span><span class="n">IOException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
         <span class="o">.</span><span class="na">retryIfRuntimeException</span><span class="o">()</span>
-        <span class="o">.</span><span class="na">withWaitStrategy</span><span class="o">(</span><span class="n">WaitStrategies</span><span class="o">.</span><span class="na">exponentialWait</span><span class="o">(</span><span class="mi">10</span><span class="o">,</span> <span class="mi">5</span><span class="o">,</span> <span class="n">MINUTES</span><span class="o">))</span>
+        <span class="o">.</span><span class="na">withWaitStrategy</span><span class="o">(</span><span class="n">WaitStrategies</span><span class="o">.</span><span class="na">exponentialWait</span><span class="o">(</span><span class="mi">100</span><span class="o">,</span> <span class="mi">5</span><span class="o">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="na">MINUTES</span><span class="o">))</span>
         <span class="o">.</span><span class="na">withStopStrategy</span><span class="o">(</span><span class="n">StopStrategies</span><span class="o">.</span><span class="na">neverStop</span><span class="o">())</span>
         <span class="o">.</span><span class="na">build</span><span class="o">();</span>
 </pre></div>
@@ -115,7 +115,7 @@ until at most 2 minutes. After 2 minutes, retry from then on in 2 minute interva
 <div class="highlight highlight-java"><pre><span class="n">Retryer</span><span class="o">&lt;</span><span class="n">Boolean</span><span class="o">&gt;</span> <span class="n">retryer</span> <span class="o">=</span> <span class="n">RetryerBuilder</span><span class="o">.&lt;</span><span class="n">Boolean</span><span class="o">&gt;</span><span class="n">newBuilder</span><span class="o">()</span>
         <span class="o">.</span><span class="na">retryIfExceptionOfType</span><span class="o">(</span><span class="n">IOException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
         <span class="o">.</span><span class="na">retryIfRuntimeException</span><span class="o">()</span>
-        <span class="o">.</span><span class="na">withWaitStrategy</span><span class="o">(</span><span class="n">WaitStrategies</span><span class="o">.</span><span class="na">fibonacciWait</span><span class="o">(</span><span class="mi">100</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="n">MINUTES</span><span class="o">))</span>
+        <span class="o">.</span><span class="na">withWaitStrategy</span><span class="o">(</span><span class="n">WaitStrategies</span><span class="o">.</span><span class="na">fibonacciWait</span><span class="o">(</span><span class="mi">100</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="na">MINUTES</span><span class="o">))</span>
         <span class="o">.</span><span class="na">withStopStrategy</span><span class="o">(</span><span class="n">StopStrategies</span><span class="o">.</span><span class="na">neverStop</span><span class="o">())</span>
         <span class="o">.</span><span class="na">build</span><span class="o">();</span>
 </pre></div>
@@ -139,7 +139,7 @@ at a certain point (although very unlikely with useful parameters for retrying).
 <h2>
 <a name="documentation" class="anchor" href="#documentation"><span class="octicon octicon-link"></span></a>Documentation</h2>
 
-<p>Javadoc can be found <a href="http://rholder.github.io/guava-retrying/javadoc/1.0.5">here</a>.</p>
+<p>Javadoc can be found <a href="http://rholder.github.io/guava-retrying/javadoc/1.0.6">here</a>.</p>
 
 <h2>
 <a name="building-from-source" class="anchor" href="#building-from-source"><span class="octicon octicon-link"></span></a>Building from source</h2>
@@ -178,6 +178,8 @@ prerequisites are <a href="https://help.github.com/articles/set-up-git">Git</a> 
 <li>Jason Dunkelberger (dirkraft)</li>
 <li>Diwaker Gupta (diwakergupta)</li>
 <li>Jochen Schalanda (joschi)</li>
+<li>Shajahan Palayil (shasts)</li>
+<li>Olivier Grégoire (fror)</li>
 </ul>
       </section>
     </div>
