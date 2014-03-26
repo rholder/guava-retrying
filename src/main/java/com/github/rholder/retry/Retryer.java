@@ -23,6 +23,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A retryer, which executes a call, and retries it until it succeeds, or
@@ -102,7 +103,7 @@ public final class Retryer<V> {
      *                            this exception is thrown and the thread's interrupt status is set.
      */
     public V call(Callable<V> callable) throws ExecutionException, RetryException {
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
         for (int attemptNumber = 1; ; attemptNumber++) {
             Attempt<V> attempt;
             try {
@@ -114,11 +115,11 @@ public final class Retryer<V> {
             if (!rejectionPredicate.apply(attempt)) {
                 return attempt.get();
             }
-            long delaySinceFirstAttemptInMillis = System.currentTimeMillis() - startTime;
+            long delaySinceFirstAttemptInMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime);
             if (stopStrategy.shouldStop(attemptNumber, delaySinceFirstAttemptInMillis)) {
                 throw new RetryException(attemptNumber, attempt);
             } else {
-                long sleepTime = waitStrategy.computeSleepTime(attemptNumber, System.currentTimeMillis() - startTime);
+                long sleepTime = waitStrategy.computeSleepTime(attemptNumber, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime));
                 try {
                     Thread.sleep(sleepTime);
                 } catch (InterruptedException e) {
