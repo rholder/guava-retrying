@@ -48,6 +48,34 @@ public class RetryerBuilderTest {
         assertTrue(result);
     }
 
+    @Test
+    public void testWithMoreThanOneWaitStrategyOneBeingFixed() throws ExecutionException, RetryException {
+        Callable<Boolean> callable = notNullAfter5Attempts();
+        Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
+                .withWaitStrategy(WaitStrategies.join(WaitStrategies.fixedWait(50L, TimeUnit.MILLISECONDS),
+                        WaitStrategies.fibonacciWait(10, Long.MAX_VALUE, TimeUnit.MILLISECONDS)))
+                .retryIfResult(Predicates.<Boolean>isNull())
+                .build();
+        long start = System.currentTimeMillis();
+        boolean result = retryer.call(callable);
+        assertTrue(System.currentTimeMillis() - start >= 370L);
+        assertTrue(result);
+    }
+
+    @Test
+    public void testWithMoreThanOneWaitStrategyOneBeingIncremental() throws ExecutionException, RetryException {
+        Callable<Boolean> callable = notNullAfter5Attempts();
+        Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
+                .withWaitStrategy(WaitStrategies.join(WaitStrategies.incrementingWait(10l, TimeUnit.MILLISECONDS, 10l, TimeUnit.MILLISECONDS),
+                        WaitStrategies.fibonacciWait(10, Long.MAX_VALUE, TimeUnit.MILLISECONDS)))
+                .retryIfResult(Predicates.<Boolean>isNull())
+                .build();
+        long start = System.currentTimeMillis();
+        boolean result = retryer.call(callable);
+        assertTrue(System.currentTimeMillis() - start >= 270L);
+        assertTrue(result);
+    }
+
     private Callable<Boolean> notNullAfter5Attempts() {
         return new Callable<Boolean>() {
             int counter = 0;
@@ -400,6 +428,18 @@ public class RetryerBuilderTest {
             fail("Exepcted to fail for null wait strategy");
         } catch (NullPointerException exception) {
             assertTrue(exception.getMessage().contains("waitStrategy may not be null"));
+        }
+    }
+
+    @Test
+    public void testWhetherBuilderFailsForNullWaitStrategyWithCompositeStrategies() {
+        try {
+            RetryerBuilder.<Void>newBuilder()
+                    .withWaitStrategy(WaitStrategies.join(null, null))
+                    .build();
+            fail("Exepcted to fail for null wait strategy");
+        } catch (IllegalStateException exception) {
+            assertTrue(exception.getMessage().contains("Cannot have a null wait strategy"));
         }
     }
 
