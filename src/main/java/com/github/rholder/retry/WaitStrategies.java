@@ -17,9 +17,11 @@
 package com.github.rholder.retry;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -196,6 +198,20 @@ public final class WaitStrategies {
         return new FibonacciWaitStrategy(multiplier, maximumTimeUnit.toMillis(maximumTime));
     }
 
+    /**
+     * Joins one or more wait strategies to derive a composite wait strategy.
+     * The new joined strategy will have a wait time which is total of all wait times computed one after another in order.
+     *
+     * @param waitStrategies Wait strategies that need to be applied one after another for computing the sleep time.
+     * @return A composite wait strategy
+     */
+    public static WaitStrategy join(WaitStrategy... waitStrategies) {
+        Preconditions.checkState(waitStrategies.length > 0, "Must have at least one wait strategy");
+        List<WaitStrategy> waitStrategyList = Lists.newArrayList(waitStrategies);
+        Preconditions.checkState(!waitStrategyList.contains(null), "Cannot have a null wait strategy");
+        return new CompositeWaitStrategy(waitStrategyList);
+    }
+
     @Immutable
     private static final class FixedWaitStrategy implements WaitStrategy {
         private final long sleepTime;
@@ -316,6 +332,24 @@ public final class WaitStrategies {
             }
 
             return result;
+        }
+    }
+
+    @Immutable
+    private static final class CompositeWaitStrategy implements WaitStrategy {
+        List<WaitStrategy> waitStrategies;
+        public CompositeWaitStrategy(List<WaitStrategy> waitStrategies) {
+            Preconditions.checkState(!waitStrategies.isEmpty(), "Need at least one wait strategy");
+            this.waitStrategies = waitStrategies;
+        }
+
+        @Override
+        public long computeSleepTime(int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
+            long waitTime = 0l;
+            for (WaitStrategy waitStrategy : waitStrategies) {
+                waitTime += waitStrategy.computeSleepTime(previousAttemptNumber, delaySinceFirstAttemptInMillis);
+            }
+            return  waitTime;
         }
     }
 }
