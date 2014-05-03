@@ -33,6 +33,7 @@ public class RetryerBuilder<V> {
     private AttemptTimeLimiter<V> attemptTimeLimiter;
     private StopStrategy stopStrategy;
     private WaitStrategy waitStrategy;
+    private BlockStrategy blockStrategy;
     private Predicate<Attempt<V>> rejectionPredicate = Predicates.alwaysFalse();
 
     private RetryerBuilder() {
@@ -76,6 +77,22 @@ public class RetryerBuilder<V> {
         this.stopStrategy = stopStrategy;
         return this;
     }
+
+
+    /**
+     * Sets the block strategy used to decide how to block between retry attempts. The default strategy is to use Thread#sleep().
+     *
+     * @param blockStrategy the strategy used to decide how to block between retry attempts
+     * @return <code>this</code>
+     * @throws IllegalStateException if a block strategy has already been set.
+     */
+    public RetryerBuilder<V> withBlockStrategy(@Nonnull BlockStrategy blockStrategy) throws IllegalStateException {
+        Preconditions.checkNotNull(blockStrategy, "blockStrategy may not be null");
+        Preconditions.checkState(this.blockStrategy == null, "a block strategy has already been set %s", this.blockStrategy);
+        this.blockStrategy = blockStrategy;
+        return this;
+    }
+
 
     /**
      * Configures the retryer to limit the duration of any particular attempt by the given duration.
@@ -159,8 +176,9 @@ public class RetryerBuilder<V> {
         AttemptTimeLimiter<V> theAttemptTimeLimiter = attemptTimeLimiter == null ? AttemptTimeLimiters.<V>noTimeLimit() : attemptTimeLimiter;
         StopStrategy theStopStrategy = stopStrategy == null ? StopStrategies.neverStop() : stopStrategy;
         WaitStrategy theWaitStrategy = waitStrategy == null ? WaitStrategies.noWait() : waitStrategy;
+        BlockStrategy theBlockStrategy = blockStrategy == null ? BlockStrategies.threadSleepStrategy() : blockStrategy;
 
-        return new Retryer<V>(theAttemptTimeLimiter, theStopStrategy, theWaitStrategy, rejectionPredicate);
+        return new Retryer<V>(theAttemptTimeLimiter, theStopStrategy, theWaitStrategy, theBlockStrategy, rejectionPredicate);
     }
 
     private static final class ExceptionClassPredicate<V> implements Predicate<Attempt<V>> {
