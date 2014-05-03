@@ -5,4 +5,7 @@ out
 *.iml
 *.ipr
 *.iws
-gradle.properties
+gradle.properties.DS_Store
+classes/
+gradle/.DS_STORE
+local.properties

@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 public final class Retryer<V> {
     private final StopStrategy stopStrategy;
     private final WaitStrategy waitStrategy;
+    private final BlockStrategy blockStrategy;
     private final AttemptTimeLimiter<V> attemptTimeLimiter;
     private final Predicate<Attempt<V>> rejectionPredicate;
 
@@ -59,7 +60,7 @@ public final class Retryer<V> {
                    @Nonnull WaitStrategy waitStrategy,
                    @Nonnull Predicate<Attempt<V>> rejectionPredicate) {
 
-        this(AttemptTimeLimiters.<V>noTimeLimit(), stopStrategy, waitStrategy, rejectionPredicate);
+        this(AttemptTimeLimiters.<V>noTimeLimit(), stopStrategy, waitStrategy, BlockStrategies.threadSleepStrategy(), rejectionPredicate);
     }
 
     /**
@@ -76,14 +77,35 @@ public final class Retryer<V> {
                    @Nonnull StopStrategy stopStrategy,
                    @Nonnull WaitStrategy waitStrategy,
                    @Nonnull Predicate<Attempt<V>> rejectionPredicate) {
+        this(attemptTimeLimiter, stopStrategy, waitStrategy, BlockStrategies.threadSleepStrategy(), rejectionPredicate);
+    }
+
+    /**
+     * Constructor
+     *
+     * @param attemptTimeLimiter to prevent from any single attempt from spinning infinitely
+     * @param stopStrategy       the strategy used to decide when the retryer must stop retrying
+     * @param waitStrategy       the strategy used to decide how much time to sleep between attempts
+     * @param blockStrategy      the strategy used to decide how to block between retry attempts; eg, Thread#sleep(), latches, etc.
+     * @param rejectionPredicate the predicate used to decide if the attempt must be rejected
+     *                           or not. If an attempt is rejected, the retryer will retry the call, unless the stop
+     *                           strategy indicates otherwise or the thread is interrupted.
+     */
+    public Retryer(@Nonnull AttemptTimeLimiter<V> attemptTimeLimiter,
+                   @Nonnull StopStrategy stopStrategy,
+                   @Nonnull WaitStrategy waitStrategy,
+                   @Nonnull BlockStrategy blockStrategy,
+                   @Nonnull Predicate<Attempt<V>> rejectionPredicate) {
         Preconditions.checkNotNull(attemptTimeLimiter, "timeLimiter may not be null");
         Preconditions.checkNotNull(stopStrategy, "stopStrategy may not be null");
         Preconditions.checkNotNull(waitStrategy, "waitStrategy may not be null");
+        Preconditions.checkNotNull(blockStrategy, "blockStrategy may not be null");
         Preconditions.checkNotNull(rejectionPredicate, "waitStrategy may not be null");
 
         this.attemptTimeLimiter = attemptTimeLimiter;
         this.stopStrategy = stopStrategy;
         this.waitStrategy = waitStrategy;
+        this.blockStrategy = blockStrategy;
         this.rejectionPredicate = rejectionPredicate;
     }
 
@@ -121,7 +143,7 @@ public final class Retryer<V> {
             } else {
                 long sleepTime = waitStrategy.computeSleepTime(attemptNumber, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime));
                 try {
-                    Thread.sleep(sleepTime);
+                    blockStrategy.block(sleepTime);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     throw new RetryException(attemptNumber, attempt);
