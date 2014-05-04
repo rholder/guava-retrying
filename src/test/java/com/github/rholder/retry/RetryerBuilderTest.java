@@ -19,11 +19,7 @@ package com.github.rholder.retry;
 import com.github.rholder.retry.Retryer.RetryerCallable;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.util.concurrent.UncheckedTimeoutException;
-
-import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
@@ -37,7 +33,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.times;
 
 public class RetryerBuilderTest {
 
@@ -58,7 +53,8 @@ public class RetryerBuilderTest {
     public void testWithMoreThanOneWaitStrategyOneBeingFixed() throws ExecutionException, RetryException {
         Callable<Boolean> callable = notNullAfter5Attempts();
         Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
-                .withWaitStrategy(WaitStrategies.join(WaitStrategies.fixedWait(50L, TimeUnit.MILLISECONDS),
+                .withWaitStrategy(WaitStrategies.join(
+                        WaitStrategies.fixedWait(50L, TimeUnit.MILLISECONDS),
                         WaitStrategies.fibonacciWait(10, Long.MAX_VALUE, TimeUnit.MILLISECONDS)))
                 .retryIfResult(Predicates.<Boolean>isNull())
                 .build();
@@ -72,7 +68,8 @@ public class RetryerBuilderTest {
     public void testWithMoreThanOneWaitStrategyOneBeingIncremental() throws ExecutionException, RetryException {
         Callable<Boolean> callable = notNullAfter5Attempts();
         Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
-                .withWaitStrategy(WaitStrategies.join(WaitStrategies.incrementingWait(10l, TimeUnit.MILLISECONDS, 10l, TimeUnit.MILLISECONDS),
+                .withWaitStrategy(WaitStrategies.join(
+                        WaitStrategies.incrementingWait(10L, TimeUnit.MILLISECONDS, 10L, TimeUnit.MILLISECONDS),
                         WaitStrategies.fibonacciWait(10, Long.MAX_VALUE, TimeUnit.MILLISECONDS)))
                 .retryIfResult(Predicates.<Boolean>isNull())
                 .build();
