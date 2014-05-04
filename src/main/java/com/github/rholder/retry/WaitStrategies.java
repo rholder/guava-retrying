@@ -338,6 +338,7 @@ public final class WaitStrategies {
     @Immutable
     private static final class CompositeWaitStrategy implements WaitStrategy {
         List<WaitStrategy> waitStrategies;
+
         public CompositeWaitStrategy(List<WaitStrategy> waitStrategies) {
             Preconditions.checkState(!waitStrategies.isEmpty(), "Need at least one wait strategy");
             this.waitStrategies = waitStrategies;
@@ -349,7 +350,7 @@ public final class WaitStrategies {
             for (WaitStrategy waitStrategy : waitStrategies) {
                 waitTime += waitStrategy.computeSleepTime(previousAttemptNumber, delaySinceFirstAttemptInMillis);
             }
-            return  waitTime;
+            return waitTime;
         }
     }
 }
