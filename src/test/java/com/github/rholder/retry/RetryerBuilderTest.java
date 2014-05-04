@@ -45,9 +45,9 @@ public class RetryerBuilderTest {
     public void testWithWaitStrategy() throws ExecutionException, RetryException {
         Callable<Boolean> callable = notNullAfter5Attempts();
         Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
-                                                 .withWaitStrategy(WaitStrategies.fixedWait(50L, TimeUnit.MILLISECONDS))
-                                                 .retryIfResult(Predicates.<Boolean>isNull())
-                                                 .build();
+                .withWaitStrategy(WaitStrategies.fixedWait(50L, TimeUnit.MILLISECONDS))
+                .retryIfResult(Predicates.<Boolean>isNull())
+                .build();
         long start = System.currentTimeMillis();
         boolean result = retryer.call(callable);
         assertTrue(System.currentTimeMillis() - start >= 250L);
@@ -85,6 +85,7 @@ public class RetryerBuilderTest {
     private Callable<Boolean> notNullAfter5Attempts() {
         return new Callable<Boolean>() {
             int counter = 0;
+
             @Override
             public Boolean call() throws Exception {
                 if (counter < 5) {
@@ -100,14 +101,13 @@ public class RetryerBuilderTest {
     public void testWithStopStrategy() throws ExecutionException {
         Callable<Boolean> callable = notNullAfter5Attempts();
         Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
-                                                 .withStopStrategy(StopStrategies.stopAfterAttempt(3))
-                                                 .retryIfResult(Predicates.<Boolean>isNull())
-                                                 .build();
+                .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+                .retryIfResult(Predicates.<Boolean>isNull())
+                .build();
         try {
             retryer.call(callable);
             fail("RetryException expected");
-        }
-        catch (RetryException e) {
+        } catch (RetryException e) {
             assertEquals(3, e.getNumberOfFailedAttempts());
         }
     }
@@ -124,9 +124,9 @@ public class RetryerBuilderTest {
         };
 
         Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
-                                                 .withBlockStrategy(blockStrategy)
-                                                 .retryIfResult(Predicates.<Boolean>isNull())
-                                                 .build();
+                .withBlockStrategy(blockStrategy)
+                .retryIfResult(Predicates.<Boolean>isNull())
+                .build();
         final int retryCount = 5;
         boolean result = retryer.call(callable);
         assertTrue(result);
@@ -137,21 +137,20 @@ public class RetryerBuilderTest {
     public void testRetryIfException() throws ExecutionException, RetryException {
         Callable<Boolean> callable = noIOExceptionAfter5Attempts();
         Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
-                                                 .retryIfException()
-                                                 .build();
+                .retryIfException()
+                .build();
         boolean result = retryer.call(callable);
         assertTrue(result);
 
         callable = noIOExceptionAfter5Attempts();
         retryer = RetryerBuilder.<Boolean>newBuilder()
-                                .retryIfException()
-                                .withStopStrategy(StopStrategies.stopAfterAttempt(3))
-                                .build();
+                .retryIfException()
+                .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+                .build();
         try {
             retryer.call(callable);
             fail("RetryException expected");
-        }
-        catch (RetryException e) {
+        } catch (RetryException e) {
             assertEquals(3, e.getNumberOfFailedAttempts());
             assertTrue(e.getLastFailedAttempt().hasException());
             assertTrue(e.getLastFailedAttempt().getExceptionCause() instanceof IOException);
@@ -160,14 +159,13 @@ public class RetryerBuilderTest {
 
         callable = noIllegalStateExceptionAfter5Attempts();
         retryer = RetryerBuilder.<Boolean>newBuilder()
-                                .retryIfException()
-                                .withStopStrategy(StopStrategies.stopAfterAttempt(3))
-                                .build();
+                .retryIfException()
+                .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+                .build();
         try {
             retryer.call(callable);
             fail("RetryException expected");
-        }
-        catch (RetryException e) {
+        } catch (RetryException e) {
             assertEquals(3, e.getNumberOfFailedAttempts());
             assertTrue(e.getLastFailedAttempt().hasException());
             assertTrue(e.getLastFailedAttempt().getExceptionCause() instanceof IllegalStateException);
@@ -178,6 +176,7 @@ public class RetryerBuilderTest {
     private Callable<Boolean> noIllegalStateExceptionAfter5Attempts() {
         return new Callable<Boolean>() {
             int counter = 0;
+
             @Override
             public Boolean call() throws Exception {
                 if (counter < 5) {
@@ -192,6 +191,7 @@ public class RetryerBuilderTest {
     private Callable<Boolean> noIOExceptionAfter5Attempts() {
         return new Callable<Boolean>() {
             int counter = 0;
+
             @Override
             public Boolean call() throws IOException {
                 if (counter < 5) {
@@ -207,13 +207,12 @@ public class RetryerBuilderTest {
     public void testRetryIfRuntimeException() throws ExecutionException, RetryException {
         Callable<Boolean> callable = noIOExceptionAfter5Attempts();
         Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
-                                                 .retryIfRuntimeException()
-                                                 .build();
+                .retryIfRuntimeException()
+                .build();
         try {
             retryer.call(callable);
             fail("ExecutionException expected");
-        }
-        catch (ExecutionException e) {
+        } catch (ExecutionException e) {
             assertTrue(e.getCause() instanceof IOException);
         }
 
@@ -222,14 +221,13 @@ public class RetryerBuilderTest {
 
         callable = noIllegalStateExceptionAfter5Attempts();
         retryer = RetryerBuilder.<Boolean>newBuilder()
-                                .retryIfRuntimeException()
-                                .withStopStrategy(StopStrategies.stopAfterAttempt(3))
-                                .build();
+                .retryIfRuntimeException()
+                .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+                .build();
         try {
             retryer.call(callable);
             fail("RetryException expected");
-        }
-        catch (RetryException e) {
+        } catch (RetryException e) {
             assertEquals(3, e.getNumberOfFailedAttempts());
             assertTrue(e.getLastFailedAttempt().hasException());
             assertTrue(e.getLastFailedAttempt().getExceptionCause() instanceof IllegalStateException);
@@ -241,29 +239,27 @@ public class RetryerBuilderTest {
     public void testRetryIfExceptionOfType() throws RetryException, ExecutionException {
         Callable<Boolean> callable = noIOExceptionAfter5Attempts();
         Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
-                                                 .retryIfExceptionOfType(IOException.class)
-                                                 .build();
+                .retryIfExceptionOfType(IOException.class)
+                .build();
         assertTrue(retryer.call(callable));
 
         callable = noIllegalStateExceptionAfter5Attempts();
         try {
             retryer.call(callable);
             fail("ExecutionException expected");
-        }
-        catch (ExecutionException e) {
+        } catch (ExecutionException e) {
             assertTrue(e.getCause() instanceof IllegalStateException);
         }
 
         callable = noIOExceptionAfter5Attempts();
         retryer = RetryerBuilder.<Boolean>newBuilder()
-                                .retryIfExceptionOfType(IOException.class)
-                                .withStopStrategy(StopStrategies.stopAfterAttempt(3))
-                                .build();
+                .retryIfExceptionOfType(IOException.class)
+                .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+                .build();
         try {
             retryer.call(callable);
             fail("RetryException expected");
-        }
-        catch (RetryException e) {
+        } catch (RetryException e) {
             assertEquals(3, e.getNumberOfFailedAttempts());
             assertTrue(e.getLastFailedAttempt().hasException());
             assertTrue(e.getLastFailedAttempt().getExceptionCause() instanceof IOException);
@@ -275,39 +271,37 @@ public class RetryerBuilderTest {
     public void testRetryIfExceptionWithPredicate() throws RetryException, ExecutionException {
         Callable<Boolean> callable = noIOExceptionAfter5Attempts();
         Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
-                                                 .retryIfException(new Predicate<Throwable>() {
-                                                     @Override
-                                                     public boolean apply(Throwable t) {
-                                                         return t instanceof IOException;
-                                                     }
-                                                 })
-                                                 .build();
+                .retryIfException(new Predicate<Throwable>() {
+                    @Override
+                    public boolean apply(Throwable t) {
+                        return t instanceof IOException;
+                    }
+                })
+                .build();
         assertTrue(retryer.call(callable));
 
         callable = noIllegalStateExceptionAfter5Attempts();
         try {
             retryer.call(callable);
             fail("ExecutionException expected");
-        }
-        catch (ExecutionException e) {
+        } catch (ExecutionException e) {
             assertTrue(e.getCause() instanceof IllegalStateException);
         }
 
         callable = noIOExceptionAfter5Attempts();
         retryer = RetryerBuilder.<Boolean>newBuilder()
-                                .retryIfException(new Predicate<Throwable>() {
-                                    @Override
-                                    public boolean apply(Throwable t) {
-                                        return t instanceof IOException;
-                                    }
-                                })
-                                .withStopStrategy(StopStrategies.stopAfterAttempt(3))
-                                .build();
+                .retryIfException(new Predicate<Throwable>() {
+                    @Override
+                    public boolean apply(Throwable t) {
+                        return t instanceof IOException;
+                    }
+                })
+                .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+                .build();
         try {
             retryer.call(callable);
             fail("RetryException expected");
-        }
-        catch (RetryException e) {
+        } catch (RetryException e) {
             assertEquals(3, e.getNumberOfFailedAttempts());
             assertTrue(e.getLastFailedAttempt().hasException());
             assertTrue(e.getLastFailedAttempt().getExceptionCause() instanceof IOException);
@@ -319,20 +313,19 @@ public class RetryerBuilderTest {
     public void testRetryIfResult() throws ExecutionException, RetryException {
         Callable<Boolean> callable = notNullAfter5Attempts();
         Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
-                                                 .retryIfResult(Predicates.<Boolean>isNull())
-                                                 .build();
+                .retryIfResult(Predicates.<Boolean>isNull())
+                .build();
         assertTrue(retryer.call(callable));
 
         callable = notNullAfter5Attempts();
         retryer = RetryerBuilder.<Boolean>newBuilder()
-                                .retryIfResult(Predicates.<Boolean>isNull())
-                                .withStopStrategy(StopStrategies.stopAfterAttempt(3))
-                                .build();
+                .retryIfResult(Predicates.<Boolean>isNull())
+                .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+                .build();
         try {
             retryer.call(callable);
             fail("RetryException expected");
-        }
-        catch (RetryException e) {
+        } catch (RetryException e) {
             assertEquals(3, e.getNumberOfFailedAttempts());
             assertTrue(e.getLastFailedAttempt().hasResult());
             assertNull(e.getLastFailedAttempt().getResult());
@@ -344,16 +337,15 @@ public class RetryerBuilderTest {
     public void testMultipleRetryConditions() throws ExecutionException, RetryException {
         Callable<Boolean> callable = notNullResultOrIOExceptionOrRuntimeExceptionAfter5Attempts();
         Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
-                                                 .retryIfResult(Predicates.<Boolean>isNull())
-                                                 .retryIfExceptionOfType(IOException.class)
-                                                 .retryIfRuntimeException()
-                                                 .withStopStrategy(StopStrategies.stopAfterAttempt(3))
-                                                 .build();
+                .retryIfResult(Predicates.<Boolean>isNull())
+                .retryIfExceptionOfType(IOException.class)
+                .retryIfRuntimeException()
+                .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+                .build();
         try {
             retryer.call(callable);
             fail("RetryException expected");
-        }
-        catch (RetryException e) {
+        } catch (RetryException e) {
             assertTrue(e.getLastFailedAttempt().hasException());
             assertTrue(e.getLastFailedAttempt().getExceptionCause() instanceof IllegalStateException);
             assertTrue(e.getCause() instanceof IllegalStateException);
@@ -361,27 +353,26 @@ public class RetryerBuilderTest {
 
         callable = notNullResultOrIOExceptionOrRuntimeExceptionAfter5Attempts();
         retryer = RetryerBuilder.<Boolean>newBuilder()
-                        .retryIfResult(Predicates.<Boolean>isNull())
-                        .retryIfExceptionOfType(IOException.class)
-                        .retryIfRuntimeException()
-                        .build();
+                .retryIfResult(Predicates.<Boolean>isNull())
+                .retryIfExceptionOfType(IOException.class)
+                .retryIfRuntimeException()
+                .build();
         assertTrue(retryer.call(callable));
     }
 
     private Callable<Boolean> notNullResultOrIOExceptionOrRuntimeExceptionAfter5Attempts() {
         return new Callable<Boolean>() {
             int counter = 0;
+
             @Override
             public Boolean call() throws IOException {
                 if (counter < 1) {
                     counter++;
                     return null;
-                }
-                else if (counter < 2) {
+                } else if (counter < 2) {
                     counter++;
                     throw new IOException();
-                }
-                else if (counter < 5) {
+                } else if (counter < 5) {
                     counter++;
                     throw new IllegalStateException();
                 }
@@ -398,20 +389,18 @@ public class RetryerBuilderTest {
             @Override
             public void run() {
                 Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
-                                                         .withWaitStrategy(WaitStrategies.fixedWait(1000L, TimeUnit.MILLISECONDS))
-                                                         .retryIfResult(Predicates.<Boolean>isNull())
-                                                         .build();
+                        .withWaitStrategy(WaitStrategies.fixedWait(1000L, TimeUnit.MILLISECONDS))
+                        .retryIfResult(Predicates.<Boolean>isNull())
+                        .build();
                 try {
                     retryer.call(alwaysNull(latch));
                     fail("RetryException expected");
-                }
-                catch (RetryException e) {
+                } catch (RetryException e) {
                     assertTrue(!e.getLastFailedAttempt().hasException());
                     assertNull(e.getCause());
                     assertTrue(Thread.currentThread().isInterrupted());
                     result.set(true);
-                }
-                catch (ExecutionException e) {
+                } catch (ExecutionException e) {
                     fail("RetryException expected");
                 }
             }
@@ -428,8 +417,8 @@ public class RetryerBuilderTest {
     public void testWrap() throws ExecutionException, RetryException {
         Callable<Boolean> callable = notNullAfter5Attempts();
         Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
-                                                 .retryIfResult(Predicates.<Boolean>isNull())
-                                                 .build();
+                .retryIfResult(Predicates.<Boolean>isNull())
+                .build();
         RetryerCallable<Boolean> wrapped = retryer.wrap(callable);
         assertTrue(wrapped.call());
     }
