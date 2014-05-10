@@ -16,10 +16,12 @@
 
 package com.github.rholder.retry;
 
+import com.github.rholder.retry.FailedAttemptEvent.FailureCause;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -46,6 +48,7 @@ public final class Retryer<V> {
     private final BlockStrategy blockStrategy;
     private final AttemptTimeLimiter<V> attemptTimeLimiter;
     private final Predicate<Attempt<V>> rejectionPredicate;
+    private FailedAttemptHandler failedAttemptHandler;
 
     /**
      * Constructor
@@ -109,6 +112,17 @@ public final class Retryer<V> {
         this.rejectionPredicate = rejectionPredicate;
     }
 
+
+    Retryer(@Nonnull AttemptTimeLimiter<V> attemptTimeLimiter,
+            @Nonnull StopStrategy stopStrategy,
+            @Nonnull WaitStrategy waitStrategy,
+            @Nonnull BlockStrategy blockStrategy,
+            @Nonnull Predicate<Attempt<V>> rejectionPredicate,
+            @Nullable FailedAttemptHandler failedAttemptHandler) {
+        this(attemptTimeLimiter, stopStrategy, waitStrategy, blockStrategy, rejectionPredicate);
+        this.failedAttemptHandler = failedAttemptHandler;
+    }
+
     /**
      * Executes the given callable. If the rejection predicate
      * accepts the attempt, the stop strategy is used to decide if a new attempt
@@ -117,7 +131,7 @@ public final class Retryer<V> {
      *
      * @param callable the callable task to be executed
      * @return the computed result of the given callable
-     * @throws ExecutionException if the given callable throws an exception, and the
+     * @throws java.util.concurrent.ExecutionException if the given callable throws an exception, and the
      *                            rejection predicate considers the attempt as successful. The original exception
      *                            is wrapped into an ExecutionException.
      * @throws RetryException     if all the attempts failed before the stop strategy decided
@@ -142,6 +156,9 @@ public final class Retryer<V> {
                 throw new RetryException(attemptNumber, attempt);
             } else {
                 long sleepTime = waitStrategy.computeSleepTime(attemptNumber, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime));
+                if (failedAttemptHandler != null) {
+                    callFailedAttemptHandler(failedAttemptHandler, attempt, sleepTime);
+                }
                 try {
                     blockStrategy.block(sleepTime);
                 } catch (InterruptedException e) {
@@ -152,13 +169,23 @@ public final class Retryer<V> {
         }
     }
 
+    private void callFailedAttemptHandler(FailedAttemptHandler handler, Attempt<V> attempt, long sleepTime) {
+        FailedAttemptEvent<V> failedAttemptEvent;
+        if (attempt.hasException()) {
+            failedAttemptEvent = new FailedAttemptEvent<V>(sleepTime, FailureCause.EXCEPTION, attempt.getExceptionCause());
+        } else {
+            failedAttemptEvent = new FailedAttemptEvent<V>(sleepTime, FailureCause.RESULT, attempt.getResult());
+        }
+        handler.handle(failedAttemptEvent);
+    }
+
     /**
-     * Wraps the given {@link Callable} in a {@link RetryerCallable}, which can
+     * Wraps the given {@link java.util.concurrent.Callable} in a {@link RetryerCallable}, which can
      * be submitted to an executor. The returned {@link RetryerCallable} uses
-     * this {@link Retryer} instance to call the given {@link Callable}.
+     * this {@link Retryer} instance to call the given {@link java.util.concurrent.Callable}.
      *
      * @param callable the callable to wrap
-     * @return a {@link RetryerCallable} that behaves like the given {@link Callable} with retry behavior defined by this {@link Retryer}
+     * @return a {@link RetryerCallable} that behaves like the given {@link java.util.concurrent.Callable} with retry behavior defined by this {@link Retryer}
      */
     public RetryerCallable<V> wrap(Callable<V> callable) {
         return new RetryerCallable<V>(this, callable);
@@ -233,7 +260,7 @@ public final class Retryer<V> {
     }
 
     /**
-     * A {@link Callable} which wraps another {@link Callable} in order to add
+     * A {@link java.util.concurrent.Callable} which wraps another {@link java.util.concurrent.Callable} in order to add
      * retrying behavior from a given {@link Retryer} instance.
      *
      * @author JB
@@ -251,7 +278,7 @@ public final class Retryer<V> {
         /**
          * Makes the enclosing retryer call the wrapped callable.
          *
-         * @see Retryer#call(Callable)
+         * @see Retryer#call(java.util.concurrent.Callable)
          */
         @Override
         public X call() throws ExecutionException, RetryException {
