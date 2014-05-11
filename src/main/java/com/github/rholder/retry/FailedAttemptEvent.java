@@ -78,6 +78,7 @@ public class FailedAttemptEvent<V> {
     /**
      * @return cause of the failed attempt
      */
+    @Nonnull
     public FailureCause getCause() {
         return cause;
     }
