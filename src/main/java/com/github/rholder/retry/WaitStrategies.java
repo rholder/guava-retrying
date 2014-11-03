@@ -16,6 +16,7 @@
 
 package com.github.rholder.retry;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
@@ -199,6 +200,21 @@ public final class WaitStrategies {
     }
 
     /**
+     * Returns a strategy which sleeps for an amount of time based on exception occured. {@code function} determines
+     * the way how sleep time could be calculated from exception {@code exceptionClass}.
+     *
+     * @param function       function to calculate sleep tim
+     * @param exceptionClass class to calculate sleep time from
+     * @return a wait strategy calculated from failed attempt
+     */
+    public static <T extends Throwable> WaitStrategy exceptionalWait(@Nonnull Class<T> exceptionClass,
+                                                                     @Nonnull Function<T, Long> function) {
+        Preconditions.checkNotNull(exceptionClass, "exceptionClass may not be null");
+        Preconditions.checkNotNull(function, "function may not be null");
+        return new AttemptWaitStrategy<T>(exceptionClass, function);
+    }
+
+    /**
      * Joins one or more wait strategies to derive a composite wait strategy.
      * The new joined strategy will have a wait time which is total of all wait times computed one after another in order.
      *
@@ -222,7 +238,7 @@ public final class WaitStrategies {
         }
 
         @Override
-        public long computeSleepTime(int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
+        public long computeSleepTime(Attempt lastAttempt, int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
             return sleepTime;
         }
     }
@@ -242,7 +258,7 @@ public final class WaitStrategies {
         }
 
         @Override
-        public long computeSleepTime(int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
+        public long computeSleepTime(Attempt lastAttempt, int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
             long t = Math.abs(RANDOM.nextLong()) % (maximum - minimum);
             return t + minimum;
         }
@@ -261,7 +277,7 @@ public final class WaitStrategies {
         }
 
         @Override
-        public long computeSleepTime(int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
+        public long computeSleepTime(Attempt lastAttempt, int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
             long result = initialSleepTime + (increment * (previousAttemptNumber - 1));
             return result >= 0L ? result : 0L;
         }
@@ -282,7 +298,7 @@ public final class WaitStrategies {
         }
 
         @Override
-        public long computeSleepTime(int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
+        public long computeSleepTime(Attempt lastAttempt, int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
             double exp = Math.pow(2, previousAttemptNumber);
             long result = Math.round(multiplier * exp);
             if (result > maximumWait) {
@@ -306,7 +322,7 @@ public final class WaitStrategies {
         }
 
         @Override
-        public long computeSleepTime(int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
+        public long computeSleepTime(Attempt lastAttempt, int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
             long fib = fib(previousAttemptNumber);
             long result = multiplier * fib;
 
@@ -345,12 +361,33 @@ public final class WaitStrategies {
         }
 
         @Override
-        public long computeSleepTime(int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
+        public long computeSleepTime(Attempt lastAttempt, int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
             long waitTime = 0l;
             for (WaitStrategy waitStrategy : waitStrategies) {
-                waitTime += waitStrategy.computeSleepTime(previousAttemptNumber, delaySinceFirstAttemptInMillis);
+                waitTime += waitStrategy.computeSleepTime(lastAttempt, previousAttemptNumber, delaySinceFirstAttemptInMillis);
             }
             return waitTime;
+        }
+    }
+
+    @Immutable
+    private static final class AttemptWaitStrategy<T extends Throwable> implements WaitStrategy {
+        private final Class<T> exceptionClass;
+        private final Function<T, Long> function;
+
+        public AttemptWaitStrategy(@Nonnull Class<T> exceptionClass, @Nonnull Function<T, Long> function) {
+            this.exceptionClass = exceptionClass;
+            this.function = function;
+        }
+
+        @Override
+        public long computeSleepTime(Attempt lastAttempt, int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
+            if (lastAttempt.hasException()) {
+                if (exceptionClass.isAssignableFrom(lastAttempt.getExceptionCause().getClass())) {
+                    return function.apply((T) lastAttempt.getExceptionCause());
+                }
+            }
+            return 0l;
         }
     }
 }
