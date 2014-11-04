@@ -141,7 +141,7 @@ public final class Retryer<V> {
             if (stopStrategy.shouldStop(attemptNumber, delaySinceFirstAttemptInMillis)) {
                 throw new RetryException(attemptNumber, attempt);
             } else {
-                long sleepTime = waitStrategy.computeSleepTime(attemptNumber, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime));
+                long sleepTime = waitStrategy.computeSleepTime(attempt, attemptNumber, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime));
                 try {
                     blockStrategy.block(sleepTime);
                 } catch (InterruptedException e) {
@@ -165,7 +165,7 @@ public final class Retryer<V> {
     }
 
     @Immutable
-    private static final class ResultAttempt<R> implements Attempt<R> {
+    static final class ResultAttempt<R> implements Attempt<R> {
         private final R result;
 
         public ResultAttempt(R result) {
@@ -199,7 +199,7 @@ public final class Retryer<V> {
     }
 
     @Immutable
-    private static final class ExceptionAttempt<R> implements Attempt<R> {
+    static final class ExceptionAttempt<R> implements Attempt<R> {
         private final ExecutionException e;
 
         public ExceptionAttempt(Throwable cause) {
