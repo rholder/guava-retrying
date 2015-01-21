@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/rholder/guava-retrying.png)](https://travis-ci.org/rholder/guava-retrying)
+[![Build Status](http://img.shields.io/travis/rholder/guava-retrying.svg)](https://travis-ci.org/rholder/guava-retrying) [![Latest Version](http://img.shields.io/badge/latest-1.0.7-brightgreen.svg)](https://github.com/rholder/guava-retrying/releases/tag/v1.0.7) [![License](http://img.shields.io/badge/license-apache%202-brightgreen.svg)](https://github.com/rholder/guava-retrying/blob/master/LICENSE)
+
 
 ##What is this?
 The guava-retrying module provides a general purpose method for retrying arbitrary Java code with specific stop, retry,
