@@ -1,3 +1,7 @@
+##1.0.7 - 2015-01-20
+* New composite wait strategy #12 (shasts)
+* Adding block strategies to the Retryer to decide how to block (tchdp)
+
 ##1.0.6 - 2014-03-26
 * Javadoc updates for Java 8 (shasts)
 * Bug from System.nanoTime() (fror), fix in #15

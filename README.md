@@ -7,7 +7,7 @@ and exception handling capabilities that are enhanced by Guava's predicate match
 This is a fork of the excellent RetryerBuilder code posted [here](http://code.google.com/p/guava-libraries/issues/detail?id=490)
 by Jean-Baptiste Nizet (JB).  I've added a Gradle build for pushing it up to my little corner of Maven Central so that
 others can easily pull it into their existing projects with minimal effort.  It also includes
-exponential and Fibonacci backoff [WaitStrategies](http://rholder.github.io/guava-retrying/javadoc/1.0.6/com/github/rholder/retry/WaitStrategies.html)
+exponential and Fibonacci backoff [WaitStrategies](http://rholder.github.io/guava-retrying/javadoc/1.0.7/com/github/rholder/retry/WaitStrategies.html)
 that might be useful for situations where more well-behaved service polling is preferred.
 
 ##Maven
@@ -15,13 +15,13 @@ that might be useful for situations where more well-behaved service polling is p
     <dependency>
       <groupId>com.github.rholder</groupId>
       <artifactId>guava-retrying</artifactId>
-      <version>1.0.6</version>
+      <version>1.0.7</version>
     </dependency>
 ```
 
 ##Gradle
 ```groovy
-    compile "com.github.rholder:guava-retrying:1.0.6"
+    compile "com.github.rholder:guava-retrying:1.0.7"
 ```
 
 ##Quickstart
@@ -101,7 +101,7 @@ at a certain point (although very unlikely with useful parameters for retrying).
 Inspiration for this implementation came from [Efficient retry/backoff mechanisms](https://paperairoplane.net/?p=640).
 
 ##Documentation
-Javadoc can be found [here](http://rholder.github.io/guava-retrying/javadoc/1.0.6).
+Javadoc can be found [here](http://rholder.github.io/guava-retrying/javadoc/1.0.7).
 
 ##Building from source
 The guava-retrying module uses a [Gradle](http://gradle.org)-based build system. In the instructions
