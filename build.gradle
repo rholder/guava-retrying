@@ -87,7 +87,7 @@ uploadArchives {
                     scm {
                         url 'scm:git@github.com:rholder/guava-retrying.git'
                         connection 'scm:git@github.com:rholder/guava-retrying.git'
-                        developerConnection 'scm:git@github.com:rholder/guave-retrying.git'
+                        developerConnection 'scm:git@github.com:rholder/guava-retrying.git'
                     }
 
                     licenses {
