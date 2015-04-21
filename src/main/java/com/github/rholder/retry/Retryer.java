@@ -16,10 +16,12 @@
 
 package com.github.rholder.retry;
 
+import com.github.rholder.retry.FailedAttemptEvent.FailureCause;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -46,6 +48,7 @@ public final class Retryer<V> {
     private final BlockStrategy blockStrategy;
     private final AttemptTimeLimiter<V> attemptTimeLimiter;
     private final Predicate<Attempt<V>> rejectionPredicate;
+    private FailedAttemptHandler failedAttemptHandler;
 
     /**
      * Constructor
@@ -109,6 +112,17 @@ public final class Retryer<V> {
         this.rejectionPredicate = rejectionPredicate;
     }
 
+
+    Retryer(@Nonnull AttemptTimeLimiter<V> attemptTimeLimiter,
+            @Nonnull StopStrategy stopStrategy,
+            @Nonnull WaitStrategy waitStrategy,
+            @Nonnull BlockStrategy blockStrategy,
+            @Nonnull Predicate<Attempt<V>> rejectionPredicate,
+            @Nullable FailedAttemptHandler failedAttemptHandler) {
+        this(attemptTimeLimiter, stopStrategy, waitStrategy, blockStrategy, rejectionPredicate);
+        this.failedAttemptHandler = failedAttemptHandler;
+    }
+
     /**
      * Executes the given callable. If the rejection predicate
      * accepts the attempt, the stop strategy is used to decide if a new attempt
@@ -142,6 +156,9 @@ public final class Retryer<V> {
                 throw new RetryException(attemptNumber, attempt);
             } else {
                 long sleepTime = waitStrategy.computeSleepTime(attemptNumber, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime));
+                if (failedAttemptHandler != null) {
+                    callFailedAttemptHandler(failedAttemptHandler, attempt, sleepTime);
+                }
                 try {
                     blockStrategy.block(sleepTime);
                 } catch (InterruptedException e) {
@@ -150,6 +167,16 @@ public final class Retryer<V> {
                 }
             }
         }
+    }
+
+    private void callFailedAttemptHandler(FailedAttemptHandler handler, Attempt<V> attempt, long sleepTime) {
+        FailedAttemptEvent<V> failedAttemptEvent;
+        if (attempt.hasException()) {
+            failedAttemptEvent = new FailedAttemptEvent<V>(sleepTime, FailureCause.EXCEPTION, attempt.getExceptionCause());
+        } else {
+            failedAttemptEvent = new FailedAttemptEvent<V>(sleepTime, FailureCause.RESULT, attempt.getResult());
+        }
+        handler.handle(failedAttemptEvent);
     }
 
     /**

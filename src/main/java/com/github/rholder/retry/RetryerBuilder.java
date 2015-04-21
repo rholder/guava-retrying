@@ -34,6 +34,7 @@ public class RetryerBuilder<V> {
     private StopStrategy stopStrategy;
     private WaitStrategy waitStrategy;
     private BlockStrategy blockStrategy;
+    private FailedAttemptHandler failedAttemptHandler;
     private Predicate<Attempt<V>> rejectionPredicate = Predicates.alwaysFalse();
 
     private RetryerBuilder() {
@@ -168,6 +169,18 @@ public class RetryerBuilder<V> {
     }
 
     /**
+     * Configures the retryer to call the supplied handler after each failed attempt.
+     *
+     * @param failedAttemptHandler a handler which is called after each failed attempt
+     * @return <code>this</code>
+     */
+    public RetryerBuilder<V> withFailedAttemptHandler(@Nonnull FailedAttemptHandler failedAttemptHandler) {
+        Preconditions.checkNotNull(failedAttemptHandler, "failedAttemptHandler may not be null");
+        this.failedAttemptHandler = failedAttemptHandler;
+        return this;
+    }
+
+    /**
      * Builds the retryer.
      *
      * @return the built retryer.
@@ -178,7 +191,7 @@ public class RetryerBuilder<V> {
         WaitStrategy theWaitStrategy = waitStrategy == null ? WaitStrategies.noWait() : waitStrategy;
         BlockStrategy theBlockStrategy = blockStrategy == null ? BlockStrategies.threadSleepStrategy() : blockStrategy;
 
-        return new Retryer<V>(theAttemptTimeLimiter, theStopStrategy, theWaitStrategy, theBlockStrategy, rejectionPredicate);
+        return new Retryer<V>(theAttemptTimeLimiter, theStopStrategy, theWaitStrategy, theBlockStrategy, rejectionPredicate, failedAttemptHandler);
     }
 
     private static final class ExceptionClassPredicate<V> implements Predicate<Attempt<V>> {
