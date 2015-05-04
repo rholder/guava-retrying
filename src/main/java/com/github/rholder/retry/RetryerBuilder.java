@@ -21,6 +21,8 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * A builder used to configure and create a {@link Retryer}.
@@ -35,6 +37,7 @@ public class RetryerBuilder<V> {
     private WaitStrategy waitStrategy;
     private BlockStrategy blockStrategy;
     private Predicate<Attempt<V>> rejectionPredicate = Predicates.alwaysFalse();
+    private Collection<RetryListener> listeners = new ArrayList<RetryListener>();
 
     private RetryerBuilder() {
     }
@@ -47,6 +50,18 @@ public class RetryerBuilder<V> {
      */
     public static <V> RetryerBuilder<V> newBuilder() {
         return new RetryerBuilder<V>();
+    }
+
+    /**
+     * Adds a listener that will be notified of each attempt that is made
+     *
+     * @param listener Listener to add
+     * @return <code>this</code>
+     */
+    public RetryerBuilder<V> withRetryListener(@Nonnull RetryListener listener) {
+        Preconditions.checkNotNull(listener, "listener may not be null");
+        listeners.add(listener);
+        return this;
     }
 
     /**
@@ -178,7 +193,7 @@ public class RetryerBuilder<V> {
         WaitStrategy theWaitStrategy = waitStrategy == null ? WaitStrategies.noWait() : waitStrategy;
         BlockStrategy theBlockStrategy = blockStrategy == null ? BlockStrategies.threadSleepStrategy() : blockStrategy;
 
-        return new Retryer<V>(theAttemptTimeLimiter, theStopStrategy, theWaitStrategy, theBlockStrategy, rejectionPredicate);
+        return new Retryer<V>(theAttemptTimeLimiter, theStopStrategy, theWaitStrategy, theBlockStrategy, rejectionPredicate, listeners);
     }
 
     private static final class ExceptionClassPredicate<V> implements Predicate<Attempt<V>> {
