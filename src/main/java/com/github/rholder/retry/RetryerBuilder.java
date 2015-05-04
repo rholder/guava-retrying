@@ -22,7 +22,7 @@ import com.google.common.base.Predicates;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 /**
  * A builder used to configure and create a {@link Retryer}.
@@ -37,7 +37,7 @@ public class RetryerBuilder<V> {
     private WaitStrategy waitStrategy;
     private BlockStrategy blockStrategy;
     private Predicate<Attempt<V>> rejectionPredicate = Predicates.alwaysFalse();
-    private Collection<RetryListener> listeners = new ArrayList<RetryListener>();
+    private List<RetryListener> listeners = new ArrayList<RetryListener>();
 
     private RetryerBuilder() {
     }
