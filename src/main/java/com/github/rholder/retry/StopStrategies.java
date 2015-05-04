@@ -16,6 +16,9 @@
 
 package com.github.rholder.retry;
 
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
 import com.google.common.base.Preconditions;
@@ -61,9 +64,27 @@ public final class StopStrategies {
      *
      * @param delayInMillis the delay, in milliseconds, starting from first attempt
      * @return a stop strategy which stops after {@code delayInMillis} time in milliseconds
+     * @deprecated Use {@link #stopAfterDelay(long, TimeUnit)} instead.
      */
+    @Deprecated
     public static StopStrategy stopAfterDelay(long delayInMillis) {
-        return new StopAfterDelayStrategy(delayInMillis);
+        return stopAfterDelay(delayInMillis, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Returns a stop strategy which stops after a given delay. If an
+     * unsuccessful attempt is made, this {@link StopStrategy} will check if the
+     * amount of time that's passed from the first attempt has exceeded the
+     * given delay amount. If it has exceeded this delay, then using this
+     * strategy causes the retrying to stop.
+     *
+     * @param duration the delay, starting from first attempt
+     * @param timeUnit the unit of the duration
+     * @return a stop strategy which stops after {@code delayInMillis} time in milliseconds
+     */
+    public static StopStrategy stopAfterDelay(long duration, @Nonnull TimeUnit timeUnit) {
+        Preconditions.checkNotNull(timeUnit, "The time unit may not be null");
+        return new StopAfterDelayStrategy(timeUnit.toMillis(duration));
     }
 
     @Immutable
