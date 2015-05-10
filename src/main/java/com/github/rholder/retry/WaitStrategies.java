@@ -200,10 +200,11 @@ public final class WaitStrategies {
     }
 
     /**
-     * Returns a strategy which sleeps for an amount of time based on exception occured. {@code function} determines
-     * the way how sleep time could be calculated from exception {@code exceptionClass}.
+     * Returns a strategy which sleeps for an amount of time based on the Exception that occurred. The
+     * {@code function} determines how the sleep time should be calculated for the given
+     * {@code exceptionClass}. If the exception does not match, a wait time of 0 is returned.
      *
-     * @param function       function to calculate sleep tim
+     * @param function       function to calculate sleep time
      * @param exceptionClass class to calculate sleep time from
      * @return a wait strategy calculated from failed attempt
      */
@@ -370,6 +371,7 @@ public final class WaitStrategies {
         }
     }
 
+    // TODO generalize this to accept a Function<Attempt, Long> after Attempt state refactoring
     @Immutable
     private static final class AttemptWaitStrategy<T extends Throwable> implements WaitStrategy {
         private final Class<T> exceptionClass;
