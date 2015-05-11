@@ -239,7 +239,7 @@ public final class WaitStrategies {
         }
 
         @Override
-        public long computeSleepTime(Attempt lastAttempt, int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
+        public long computeSleepTime(Attempt failedAttempt) {
             return sleepTime;
         }
     }
@@ -259,7 +259,7 @@ public final class WaitStrategies {
         }
 
         @Override
-        public long computeSleepTime(Attempt lastAttempt, int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
+        public long computeSleepTime(Attempt failedAttempt) {
             long t = Math.abs(RANDOM.nextLong()) % (maximum - minimum);
             return t + minimum;
         }
@@ -278,8 +278,8 @@ public final class WaitStrategies {
         }
 
         @Override
-        public long computeSleepTime(Attempt lastAttempt, int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
-            long result = initialSleepTime + (increment * (previousAttemptNumber - 1));
+        public long computeSleepTime(Attempt failedAttempt) {
+            long result = initialSleepTime + (increment * (failedAttempt.getAttemptNumber() - 1));
             return result >= 0L ? result : 0L;
         }
     }
@@ -299,8 +299,8 @@ public final class WaitStrategies {
         }
 
         @Override
-        public long computeSleepTime(Attempt lastAttempt, int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
-            double exp = Math.pow(2, previousAttemptNumber);
+        public long computeSleepTime(Attempt failedAttempt) {
+            double exp = Math.pow(2, failedAttempt.getAttemptNumber());
             long result = Math.round(multiplier * exp);
             if (result > maximumWait) {
                 result = maximumWait;
@@ -323,8 +323,8 @@ public final class WaitStrategies {
         }
 
         @Override
-        public long computeSleepTime(Attempt lastAttempt, int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
-            long fib = fib(previousAttemptNumber);
+        public long computeSleepTime(Attempt failedAttempt) {
+            long fib = fib(failedAttempt.getAttemptNumber());
             long result = multiplier * fib;
 
             if (result > maximumWait || result < 0L) {
@@ -362,10 +362,10 @@ public final class WaitStrategies {
         }
 
         @Override
-        public long computeSleepTime(Attempt lastAttempt, int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
+        public long computeSleepTime(Attempt failedAttempt) {
             long waitTime = 0l;
             for (WaitStrategy waitStrategy : waitStrategies) {
-                waitTime += waitStrategy.computeSleepTime(lastAttempt, previousAttemptNumber, delaySinceFirstAttemptInMillis);
+                waitTime += waitStrategy.computeSleepTime(failedAttempt);
             }
             return waitTime;
         }
@@ -383,7 +383,7 @@ public final class WaitStrategies {
         }
 
         @Override
-        public long computeSleepTime(Attempt lastAttempt, int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
+        public long computeSleepTime(Attempt lastAttempt) {
             if (lastAttempt.hasException()) {
                 if (exceptionClass.isAssignableFrom(lastAttempt.getExceptionCause().getClass())) {
                     return function.apply((T) lastAttempt.getExceptionCause());

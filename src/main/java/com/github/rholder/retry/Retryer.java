@@ -156,9 +156,9 @@ public final class Retryer<V> {
             Attempt<V> attempt;
             try {
                 V result = attemptTimeLimiter.call(callable);
-                attempt = new ResultAttempt<V>(result);
+                attempt = new ResultAttempt<V>(result, attemptNumber, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime));
             } catch (Throwable t) {
-                attempt = new ExceptionAttempt<V>(t);
+                attempt = new ExceptionAttempt<V>(t, attemptNumber, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime));
             }
 
             for (RetryListener listener : listeners) {
@@ -168,11 +168,10 @@ public final class Retryer<V> {
             if (!rejectionPredicate.apply(attempt)) {
                 return attempt.get();
             }
-            long delaySinceFirstAttemptInMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime);
-            if (stopStrategy.shouldStop(attemptNumber, delaySinceFirstAttemptInMillis)) {
+            if (stopStrategy.shouldStop(attempt)) {
                 throw new RetryException(attemptNumber, attempt);
             } else {
-                long sleepTime = waitStrategy.computeSleepTime(attempt, attemptNumber, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime));
+                long sleepTime = waitStrategy.computeSleepTime(attempt);
                 try {
                     blockStrategy.block(sleepTime);
                 } catch (InterruptedException e) {
@@ -198,9 +197,13 @@ public final class Retryer<V> {
     @Immutable
     static final class ResultAttempt<R> implements Attempt<R> {
         private final R result;
+        private final long attemptNumber;
+        private final long delaySinceFirstAttempt;
 
-        public ResultAttempt(R result) {
+        public ResultAttempt(R result, long attemptNumber, long delaySinceFirstAttempt) {
             this.result = result;
+            this.attemptNumber = attemptNumber;
+            this.delaySinceFirstAttempt = delaySinceFirstAttempt;
         }
 
         @Override
@@ -227,14 +230,28 @@ public final class Retryer<V> {
         public Throwable getExceptionCause() throws IllegalStateException {
             throw new IllegalStateException("The attempt resulted in a result, not in an exception");
         }
+
+        @Override
+        public long getAttemptNumber() {
+            return attemptNumber;
+        }
+
+        @Override
+        public long getDelaySinceFirstAttempt() {
+            return delaySinceFirstAttempt;
+        }
     }
 
     @Immutable
     static final class ExceptionAttempt<R> implements Attempt<R> {
         private final ExecutionException e;
+        private final long attemptNumber;
+        private final long delaySinceFirstAttempt;
 
-        public ExceptionAttempt(Throwable cause) {
+        public ExceptionAttempt(Throwable cause, long attemptNumber, long delaySinceFirstAttempt) {
             this.e = new ExecutionException(cause);
+            this.attemptNumber = attemptNumber;
+            this.delaySinceFirstAttempt = delaySinceFirstAttempt;
         }
 
         @Override
@@ -260,6 +277,16 @@ public final class Retryer<V> {
         @Override
         public Throwable getExceptionCause() throws IllegalStateException {
             return e.getCause();
+        }
+
+        @Override
+        public long getAttemptNumber() {
+            return attemptNumber;
+        }
+
+        @Override
+        public long getDelaySinceFirstAttempt() {
+            return delaySinceFirstAttempt;
         }
     }
 

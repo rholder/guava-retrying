@@ -90,7 +90,7 @@ public final class StopStrategies {
     @Immutable
     private static final class NeverStopStrategy implements StopStrategy {
         @Override
-        public boolean shouldStop(int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
+        public boolean shouldStop(Attempt failedAttempt) {
             return false;
         }
     }
@@ -105,8 +105,8 @@ public final class StopStrategies {
         }
 
         @Override
-        public boolean shouldStop(int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
-            return previousAttemptNumber >= maxAttemptNumber;
+        public boolean shouldStop(Attempt failedAttempt) {
+            return failedAttempt.getAttemptNumber() >= maxAttemptNumber;
         }
     }
 
@@ -120,8 +120,8 @@ public final class StopStrategies {
         }
 
         @Override
-        public boolean shouldStop(int previousAttemptNumber, long delaySinceFirstAttemptInMillis) {
-            return delaySinceFirstAttemptInMillis >= maxDelay;
+        public boolean shouldStop(Attempt failedAttempt) {
+            return failedAttempt.getDelaySinceFirstAttempt() >= maxDelay;
         }
     }
 }

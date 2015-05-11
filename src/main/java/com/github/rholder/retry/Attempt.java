@@ -69,4 +69,18 @@ public interface Attempt<V> {
      *                               as indicated by {@link #hasException()}
      */
     public Throwable getExceptionCause() throws IllegalStateException;
+
+    /**
+     * The number, starting from 1, of this attempt.
+     *
+     * @return the attempt number
+     */
+    public long getAttemptNumber();
+
+    /**
+     * The delay since the start of the first attempt, in milliseconds.
+     *
+     * @return the delay since the start of the first attempt, in milliseconds
+     */
+    public long getDelaySinceFirstAttempt();
 }

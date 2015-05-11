@@ -27,27 +27,31 @@ public class StopStrategiesTest {
 
     @Test
     public void testNeverStop() {
-        assertFalse(StopStrategies.neverStop().shouldStop(3, 6546L));
+        assertFalse(StopStrategies.neverStop().shouldStop(failedAttempt(3, 6546L)));
     }
 
     @Test
     public void testStopAfterAttempt() {
-        assertFalse(StopStrategies.stopAfterAttempt(3).shouldStop(2, 6546L));
-        assertTrue(StopStrategies.stopAfterAttempt(3).shouldStop(3, 6546L));
-        assertTrue(StopStrategies.stopAfterAttempt(3).shouldStop(4, 6546L));
+        assertFalse(StopStrategies.stopAfterAttempt(3).shouldStop(failedAttempt(2, 6546L)));
+        assertTrue(StopStrategies.stopAfterAttempt(3).shouldStop(failedAttempt(3, 6546L)));
+        assertTrue(StopStrategies.stopAfterAttempt(3).shouldStop(failedAttempt(4, 6546L)));
     }
 
     @Test
     public void testStopAfterDelayWithMilliseconds() {
-        assertFalse(StopStrategies.stopAfterDelay(1000L).shouldStop(2, 999L));
-        assertTrue(StopStrategies.stopAfterDelay(1000L).shouldStop(2, 1000L));
-        assertTrue(StopStrategies.stopAfterDelay(1000L).shouldStop(2, 1001L));
+        assertFalse(StopStrategies.stopAfterDelay(1000L).shouldStop(failedAttempt(2, 999L)));
+        assertTrue(StopStrategies.stopAfterDelay(1000L).shouldStop(failedAttempt(2, 1000L)));
+        assertTrue(StopStrategies.stopAfterDelay(1000L).shouldStop(failedAttempt(2, 1001L)));
     }
 
     @Test
     public void testStopAfterDelayWithTimeUnit() {
-        assertFalse(StopStrategies.stopAfterDelay(1, TimeUnit.SECONDS).shouldStop(2, 999L));
-        assertTrue(StopStrategies.stopAfterDelay(1, TimeUnit.SECONDS).shouldStop(2, 1000L));
-        assertTrue(StopStrategies.stopAfterDelay(1, TimeUnit.SECONDS).shouldStop(2, 1001L));
+        assertFalse(StopStrategies.stopAfterDelay(1, TimeUnit.SECONDS).shouldStop(failedAttempt(2, 999L)));
+        assertTrue(StopStrategies.stopAfterDelay(1, TimeUnit.SECONDS).shouldStop(failedAttempt(2, 1000L)));
+        assertTrue(StopStrategies.stopAfterDelay(1, TimeUnit.SECONDS).shouldStop(failedAttempt(2, 1001L)));
+    }
+
+    public Attempt<Boolean> failedAttempt(long attemptNumber, long delaySinceFirstAttempt) {
+        return new Retryer.ExceptionAttempt<Boolean>(new RuntimeException(), attemptNumber, delaySinceFirstAttempt);
     }
 }
