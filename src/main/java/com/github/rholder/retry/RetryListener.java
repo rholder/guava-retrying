@@ -24,10 +24,9 @@ package com.github.rholder.retry;
 public interface RetryListener {
 
     /**
-     * @param attempt The current attempt result
-     * @param attemptNumber The current attempt number
+     * @param attempt the current {@link Attempt}
      * @param <V> The type returned by the retryer callable.
      */
     // TODO adjust for 3 phases, refactor Attempt to include attemptNumber
-    <V> void onRetry(Attempt<V> attempt, int attemptNumber);
+    <V> void onRetry(Attempt<V> attempt);
 }

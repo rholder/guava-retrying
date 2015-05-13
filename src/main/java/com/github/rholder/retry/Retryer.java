@@ -162,7 +162,7 @@ public final class Retryer<V> {
             }
 
             for (RetryListener listener : listeners) {
-                listener.onRetry(attempt, attemptNumber);
+                listener.onRetry(attempt);
             }
 
             if (!rejectionPredicate.apply(attempt)) {

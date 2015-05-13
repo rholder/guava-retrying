@@ -461,12 +461,12 @@ public class RetryerBuilderTest {
 
     @Test
     public void testRetryListener_SuccessfulAttempt() throws Exception {
-        final Map<Integer, Attempt> attempts = new HashMap<Integer, Attempt>();
+        final Map<Long, Attempt> attempts = new HashMap<Long, Attempt>();
 
         RetryListener listener = new RetryListener() {
             @Override
-            public <V> void onRetry(Attempt<V> attempt, int attemptNumber) {
-                attempts.put(attemptNumber, attempt);
+            public <V> void onRetry(Attempt<V> attempt) {
+                attempts.put(attempt.getAttemptNumber(), attempt);
             }
         };
 
@@ -480,22 +480,22 @@ public class RetryerBuilderTest {
 
         assertEquals(6, attempts.size());
 
-        assertResultAttempt(attempts.get(1), true, null);
-        assertResultAttempt(attempts.get(2), true, null);
-        assertResultAttempt(attempts.get(3), true, null);
-        assertResultAttempt(attempts.get(4), true, null);
-        assertResultAttempt(attempts.get(5), true, null);
-        assertResultAttempt(attempts.get(6), true, true);
+        assertResultAttempt(attempts.get(1L), true, null);
+        assertResultAttempt(attempts.get(2L), true, null);
+        assertResultAttempt(attempts.get(3L), true, null);
+        assertResultAttempt(attempts.get(4L), true, null);
+        assertResultAttempt(attempts.get(5L), true, null);
+        assertResultAttempt(attempts.get(6L), true, true);
     }
 
     @Test
     public void testRetryListener_WithException() throws Exception {
-        final Map<Integer, Attempt> attempts = new HashMap<Integer, Attempt>();
+        final Map<Long, Attempt> attempts = new HashMap<Long, Attempt>();
 
         RetryListener listener = new RetryListener() {
             @Override
-            public <V> void onRetry(Attempt<V> attempt, int attemptNumber) {
-                attempts.put(attemptNumber, attempt);
+            public <V> void onRetry(Attempt<V> attempt) {
+                attempts.put(attempt.getAttemptNumber(), attempt);
             }
         };
 
@@ -510,12 +510,12 @@ public class RetryerBuilderTest {
 
         assertEquals(6, attempts.size());
 
-        assertExceptionAttempt(attempts.get(1), true, IOException.class);
-        assertExceptionAttempt(attempts.get(2), true, IOException.class);
-        assertExceptionAttempt(attempts.get(3), true, IOException.class);
-        assertExceptionAttempt(attempts.get(4), true, IOException.class);
-        assertExceptionAttempt(attempts.get(5), true, IOException.class);
-        assertResultAttempt(attempts.get(6), true, true);
+        assertExceptionAttempt(attempts.get(1L), true, IOException.class);
+        assertExceptionAttempt(attempts.get(2L), true, IOException.class);
+        assertExceptionAttempt(attempts.get(3L), true, IOException.class);
+        assertExceptionAttempt(attempts.get(4L), true, IOException.class);
+        assertExceptionAttempt(attempts.get(5L), true, IOException.class);
+        assertResultAttempt(attempts.get(6L), true, true);
     }
 
     @Test
@@ -533,13 +533,13 @@ public class RetryerBuilderTest {
         Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
                 .withRetryListener(new RetryListener() {
                     @Override
-                    public <V> void onRetry(Attempt<V> attempt, int attemptNumber) {
+                    public <V> void onRetry(Attempt<V> attempt) {
                         listenerOne.set(true);
                     }
                 })
                 .withRetryListener(new RetryListener() {
                     @Override
-                    public <V> void onRetry(Attempt<V> attempt, int attemptNumber) {
+                    public <V> void onRetry(Attempt<V> attempt) {
                         listenerTwo.set(true);
                     }
                 })
@@ -550,13 +550,13 @@ public class RetryerBuilderTest {
         assertTrue(listenerTwo.get());
     }
 
-    private <V> void assertResultAttempt(Attempt<V> actualAttempt, boolean expectedHasResult, V expectedResult) {
+    private void assertResultAttempt(Attempt actualAttempt, boolean expectedHasResult, Object expectedResult) {
         assertFalse(actualAttempt.hasException());
         assertEquals(expectedHasResult, actualAttempt.hasResult());
         assertEquals(expectedResult, actualAttempt.getResult());
     }
 
-    private <V> void assertExceptionAttempt(Attempt<V> actualAttempt, boolean expectedHasException, Class<?> expectedExceptionClass) {
+    private void assertExceptionAttempt(Attempt actualAttempt, boolean expectedHasException, Class<?> expectedExceptionClass) {
         assertFalse(actualAttempt.hasResult());
         assertEquals(expectedHasException, actualAttempt.hasException());
         assertTrue(expectedExceptionClass.isInstance(actualAttempt.getExceptionCause()));
