@@ -206,13 +206,13 @@ public final class WaitStrategies {
      *
      * @param function       function to calculate sleep time
      * @param exceptionClass class to calculate sleep time from
-     * @return a wait strategy calculated from failed attempt
+     * @return a wait strategy calculated from the failed attempt
      */
-    public static <T extends Throwable> WaitStrategy exceptionalWait(@Nonnull Class<T> exceptionClass,
-                                                                     @Nonnull Function<T, Long> function) {
+    public static <T extends Throwable> WaitStrategy exceptionWait(@Nonnull Class<T> exceptionClass,
+                                                                   @Nonnull Function<T, Long> function) {
         Preconditions.checkNotNull(exceptionClass, "exceptionClass may not be null");
         Preconditions.checkNotNull(function, "function may not be null");
-        return new AttemptWaitStrategy<T>(exceptionClass, function);
+        return new ExceptionWaitStrategy<T>(exceptionClass, function);
     }
 
     /**
@@ -354,7 +354,7 @@ public final class WaitStrategies {
 
     @Immutable
     private static final class CompositeWaitStrategy implements WaitStrategy {
-        List<WaitStrategy> waitStrategies;
+        private final List<WaitStrategy> waitStrategies;
 
         public CompositeWaitStrategy(List<WaitStrategy> waitStrategies) {
             Preconditions.checkState(!waitStrategies.isEmpty(), "Need at least one wait strategy");
@@ -363,7 +363,7 @@ public final class WaitStrategies {
 
         @Override
         public long computeSleepTime(Attempt failedAttempt) {
-            long waitTime = 0l;
+            long waitTime = 0L;
             for (WaitStrategy waitStrategy : waitStrategies) {
                 waitTime += waitStrategy.computeSleepTime(failedAttempt);
             }
@@ -371,25 +371,26 @@ public final class WaitStrategies {
         }
     }
 
-    // TODO generalize this to accept a Function<Attempt, Long> after Attempt state refactoring
     @Immutable
-    private static final class AttemptWaitStrategy<T extends Throwable> implements WaitStrategy {
+    private static final class ExceptionWaitStrategy<T extends Throwable> implements WaitStrategy {
         private final Class<T> exceptionClass;
         private final Function<T, Long> function;
 
-        public AttemptWaitStrategy(@Nonnull Class<T> exceptionClass, @Nonnull Function<T, Long> function) {
+        public ExceptionWaitStrategy(@Nonnull Class<T> exceptionClass, @Nonnull Function<T, Long> function) {
             this.exceptionClass = exceptionClass;
             this.function = function;
         }
 
+        @SuppressWarnings({"ThrowableResultOfMethodCallIgnored", "ConstantConditions", "unchecked"})
         @Override
         public long computeSleepTime(Attempt lastAttempt) {
             if (lastAttempt.hasException()) {
-                if (exceptionClass.isAssignableFrom(lastAttempt.getExceptionCause().getClass())) {
-                    return function.apply((T) lastAttempt.getExceptionCause());
+                Throwable cause = lastAttempt.getExceptionCause();
+                if (exceptionClass.isAssignableFrom(cause.getClass())) {
+                    return function.apply((T) cause);
                 }
             }
-            return 0l;
+            return 0L;
         }
     }
 }

@@ -154,15 +154,18 @@ public class WaitStrategiesTest {
     }
 
     @Test
-    public void testExceptionalWait() {
-        WaitStrategy exceptionalWait = WaitStrategies.exceptionalWait(RuntimeException.class, zeroSleepFunction());
-        assertEquals(0l, exceptionalWait.computeSleepTime(failedAttempt(42, 7227)));
-        WaitStrategy oneMinuteWait = WaitStrategies.exceptionalWait(RuntimeException.class, oneMinuteSleepFunction());
-        assertEquals(3600 * 1000l, oneMinuteWait.computeSleepTime(failedAttempt(42, 7227)));
-        WaitStrategy noMatchRetryAfterWait = WaitStrategies.exceptionalWait(RetryAfterException.class, customSleepFunction());
-        assertEquals(0l, noMatchRetryAfterWait.computeSleepTime(failedAttempt(42, 7227)));
-        WaitStrategy retryAfterWait = WaitStrategies.exceptionalWait(RetryAfterException.class, customSleepFunction());
-        assertEquals(29l, retryAfterWait.computeSleepTime(failedRetryAfterAttempt(42, 7227)));
+    public void testExceptionWait() {
+        WaitStrategy exceptionWait = WaitStrategies.exceptionWait(RuntimeException.class, zeroSleepFunction());
+        assertEquals(0L, exceptionWait.computeSleepTime(failedAttempt(42, 7227)));
+
+        WaitStrategy oneMinuteWait = WaitStrategies.exceptionWait(RuntimeException.class, oneMinuteSleepFunction());
+        assertEquals(3600 * 1000L, oneMinuteWait.computeSleepTime(failedAttempt(42, 7227)));
+
+        WaitStrategy noMatchRetryAfterWait = WaitStrategies.exceptionWait(RetryAfterException.class, customSleepFunction());
+        assertEquals(0L, noMatchRetryAfterWait.computeSleepTime(failedAttempt(42, 7227)));
+
+        WaitStrategy retryAfterWait = WaitStrategies.exceptionWait(RetryAfterException.class, customSleepFunction());
+        assertEquals(29L, retryAfterWait.computeSleepTime(failedRetryAfterAttempt(42, 7227)));
     }
 
     public Attempt<Boolean> failedAttempt(long attemptNumber, long delaySinceFirstAttempt) {
@@ -177,7 +180,7 @@ public class WaitStrategiesTest {
         return new Function<RuntimeException, Long>() {
             @Override
             public Long apply(RuntimeException input) {
-                return 0l;
+                return 0L;
             }
         };
     }
@@ -186,7 +189,7 @@ public class WaitStrategiesTest {
         return new Function<RuntimeException, Long>() {
             @Override
             public Long apply(RuntimeException input) {
-                return 3600 * 1000l;
+                return 3600 * 1000L;
             }
         };
     }
@@ -200,11 +203,11 @@ public class WaitStrategiesTest {
         };
     }
 
-     private class RetryAfterException extends RuntimeException {
-         private final long retryAfter = 29l;
+    public class RetryAfterException extends RuntimeException {
+        private final long retryAfter = 29L;
 
-         public long getRetryAfter() {
-             return retryAfter;
-         }
-     }
+        public long getRetryAfter() {
+            return retryAfter;
+        }
+    }
 }
