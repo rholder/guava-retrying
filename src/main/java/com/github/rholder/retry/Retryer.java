@@ -16,6 +16,7 @@
 
 package com.github.rholder.retry;
 
+import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 
@@ -114,6 +115,7 @@ public final class Retryer<V> {
      *                           strategy indicates otherwise or the thread is interrupted.
      * @param listeners          collection of retry listeners
      */
+    @Beta
     public Retryer(@Nonnull AttemptTimeLimiter<V> attemptTimeLimiter,
                    @Nonnull StopStrategy stopStrategy,
                    @Nonnull WaitStrategy waitStrategy,

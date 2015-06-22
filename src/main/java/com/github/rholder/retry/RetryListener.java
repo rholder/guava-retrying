@@ -16,17 +16,21 @@
 
 package com.github.rholder.retry;
 
+import com.google.common.annotations.Beta;
+
 /**
- * A listener that will be called after each retry attempt.
- *
- * The listener will be called no matter what the result is and before the rejection predicate and stop strategies are applied
+ * This listener provides callbacks for several events that occur when running
+ * code through a {@link Retryer} instance.
  */
+@Beta
 public interface RetryListener {
 
     /**
+     * This method with fire no matter what the result is and before the
+     * rejection predicate and stop strategies are applied.
+     *
      * @param attempt the current {@link Attempt}
-     * @param <V> The type returned by the retryer callable.
+     * @param <V>     the type returned by the retryer callable
      */
-    // TODO adjust for 3 phases, refactor Attempt to include attemptNumber
     <V> void onRetry(Attempt<V> attempt);
 }
