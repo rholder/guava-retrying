@@ -126,7 +126,7 @@ public final class Retryer<V> {
         Preconditions.checkNotNull(stopStrategy, "stopStrategy may not be null");
         Preconditions.checkNotNull(waitStrategy, "waitStrategy may not be null");
         Preconditions.checkNotNull(blockStrategy, "blockStrategy may not be null");
-        Preconditions.checkNotNull(rejectionPredicate, "waitStrategy may not be null");
+        Preconditions.checkNotNull(rejectionPredicate, "rejectionPredicate may not be null");
         Preconditions.checkNotNull(listeners, "listeners may not null");
 
         this.attemptTimeLimiter = attemptTimeLimiter;
