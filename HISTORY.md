@@ -1,3 +1,11 @@
+##2.0.0 - 2015-06-30
+* Calculate sleep time from failed attempt #25 (yaroslavm)
+* Be consistent about "duration" method parameters #30 (Stephan202)
+* Use an open Maven dependency range for Guava dependency #32 (voiceinsideyou)
+* Add @Beta RetryListener support #36 (kevinconaway)
+* Update to Gradle 2.x #38
+* Minimal breaking 1.0.x to 2.0.x API changes for Attempt state, hence the major version update
+
 ##1.0.7 - 2015-01-20
 * New composite wait strategy #12 (shasts)
 * Adding block strategies to the Retryer to decide how to block (tchdp)
