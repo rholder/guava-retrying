@@ -19,6 +19,7 @@ package com.github.rholder.retry;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Ticker;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
@@ -50,6 +51,7 @@ public final class Retryer<V> {
     private final AttemptTimeLimiter<V> attemptTimeLimiter;
     private final Predicate<Attempt<V>> rejectionPredicate;
     private final Collection<RetryListener> listeners;
+    private final Ticker ticker;
 
     /**
      * Constructor
@@ -100,20 +102,20 @@ public final class Retryer<V> {
                    @Nonnull WaitStrategy waitStrategy,
                    @Nonnull BlockStrategy blockStrategy,
                    @Nonnull Predicate<Attempt<V>> rejectionPredicate) {
-        this(attemptTimeLimiter, stopStrategy, waitStrategy, blockStrategy, rejectionPredicate, new ArrayList<RetryListener>());
+        this(attemptTimeLimiter, stopStrategy, waitStrategy, blockStrategy, rejectionPredicate, new ArrayList<RetryListener>(), Ticker.systemTicker());
     }
 
     /**
      * Constructor
-     *
-     * @param attemptTimeLimiter to prevent from any single attempt from spinning infinitely
+     *  @param attemptTimeLimiter to prevent from any single attempt from spinning infinitely
      * @param stopStrategy       the strategy used to decide when the retryer must stop retrying
      * @param waitStrategy       the strategy used to decide how much time to sleep between attempts
      * @param blockStrategy      the strategy used to decide how to block between retry attempts; eg, Thread#sleep(), latches, etc.
      * @param rejectionPredicate the predicate used to decide if the attempt must be rejected
-     *                           or not. If an attempt is rejected, the retryer will retry the call, unless the stop
-     *                           strategy indicates otherwise or the thread is interrupted.
+*                           or not. If an attempt is rejected, the retryer will retry the call, unless the stop
+*                           strategy indicates otherwise or the thread is interrupted.
      * @param listeners          collection of retry listeners
+     * @param ticker abstraction to read time from
      */
     @Beta
     public Retryer(@Nonnull AttemptTimeLimiter<V> attemptTimeLimiter,
@@ -121,13 +123,15 @@ public final class Retryer<V> {
                    @Nonnull WaitStrategy waitStrategy,
                    @Nonnull BlockStrategy blockStrategy,
                    @Nonnull Predicate<Attempt<V>> rejectionPredicate,
-                   @Nonnull Collection<RetryListener> listeners) {
+                   @Nonnull Collection<RetryListener> listeners,
+                   @Nonnull Ticker ticker) {
         Preconditions.checkNotNull(attemptTimeLimiter, "timeLimiter may not be null");
         Preconditions.checkNotNull(stopStrategy, "stopStrategy may not be null");
         Preconditions.checkNotNull(waitStrategy, "waitStrategy may not be null");
         Preconditions.checkNotNull(blockStrategy, "blockStrategy may not be null");
         Preconditions.checkNotNull(rejectionPredicate, "rejectionPredicate may not be null");
         Preconditions.checkNotNull(listeners, "listeners may not null");
+        Preconditions.checkNotNull(ticker, "ticker may not be null");
 
         this.attemptTimeLimiter = attemptTimeLimiter;
         this.stopStrategy = stopStrategy;
@@ -135,6 +139,7 @@ public final class Retryer<V> {
         this.blockStrategy = blockStrategy;
         this.rejectionPredicate = rejectionPredicate;
         this.listeners = listeners;
+        this.ticker = ticker;
     }
 
     /**
@@ -153,14 +158,14 @@ public final class Retryer<V> {
      *                            this exception is thrown and the thread's interrupt status is set.
      */
     public V call(Callable<V> callable) throws ExecutionException, RetryException {
-        long startTime = System.nanoTime();
+        long startTime = ticker.read();
         for (int attemptNumber = 1; ; attemptNumber++) {
             Attempt<V> attempt;
             try {
                 V result = attemptTimeLimiter.call(callable);
-                attempt = new ResultAttempt<V>(result, attemptNumber, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime));
+                attempt = new ResultAttempt<V>(result, attemptNumber, TimeUnit.NANOSECONDS.toMillis(ticker.read() - startTime));
             } catch (Throwable t) {
-                attempt = new ExceptionAttempt<V>(t, attemptNumber, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime));
+                attempt = new ExceptionAttempt<V>(t, attemptNumber, TimeUnit.NANOSECONDS.toMillis(ticker.read() - startTime));
             }
 
             for (RetryListener listener : listeners) {
