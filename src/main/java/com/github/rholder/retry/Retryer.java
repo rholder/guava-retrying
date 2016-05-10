@@ -19,6 +19,7 @@ package com.github.rholder.retry;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
@@ -50,6 +51,19 @@ public final class Retryer<V> {
     private final AttemptTimeLimiter<V> attemptTimeLimiter;
     private final Predicate<Attempt<V>> rejectionPredicate;
     private final Collection<RetryListener> listeners;
+
+    /**
+     * Constructor using a rejection predicate which always returns false,
+     * thus causing the Retryer to always accept the result.
+     *
+     * @param stopStrategy       the strategy used to decide when the retryer must stop retrying
+     * @param waitStrategy       the strategy used to decide how much time to sleep between attempts
+     *
+     * @see #Retryer(StopStrategy, WaitStrategy, Predicate)
+     */
+    public Retryer(@Nonnull StopStrategy stopStrategy, @Nonnull WaitStrategy waitStrategy) {
+        this(stopStrategy, waitStrategy, Predicates.<Attempt<V>>alwaysFalse());
+    }
 
     /**
      * Constructor
