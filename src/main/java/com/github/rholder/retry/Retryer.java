@@ -50,6 +50,7 @@ public final class Retryer<V> {
     private final AttemptTimeLimiter<V> attemptTimeLimiter;
     private final Predicate<Attempt<V>> rejectionPredicate;
     private final Collection<RetryListener> listeners;
+    private final RetryerBuilder<V> retryerBuilder;
 
     /**
      * Constructor
@@ -100,7 +101,7 @@ public final class Retryer<V> {
                    @Nonnull WaitStrategy waitStrategy,
                    @Nonnull BlockStrategy blockStrategy,
                    @Nonnull Predicate<Attempt<V>> rejectionPredicate) {
-        this(attemptTimeLimiter, stopStrategy, waitStrategy, blockStrategy, rejectionPredicate, new ArrayList<RetryListener>());
+        this(attemptTimeLimiter, stopStrategy, waitStrategy, blockStrategy, rejectionPredicate, new ArrayList<RetryListener>(), null);
     }
 
     /**
@@ -122,6 +123,30 @@ public final class Retryer<V> {
                    @Nonnull BlockStrategy blockStrategy,
                    @Nonnull Predicate<Attempt<V>> rejectionPredicate,
                    @Nonnull Collection<RetryListener> listeners) {
+        this(attemptTimeLimiter, stopStrategy, waitStrategy, blockStrategy, rejectionPredicate, listeners, null);
+    }
+
+
+    /**
+     * Constructor
+     *
+     * @param attemptTimeLimiter to prevent from any single attempt from spinning infinitely
+     * @param stopStrategy       the strategy used to decide when the retryer must stop retrying
+     * @param waitStrategy       the strategy used to decide how much time to sleep between attempts
+     * @param blockStrategy      the strategy used to decide how to block between retry attempts; eg, Thread#sleep(), latches, etc.
+     * @param rejectionPredicate the predicate used to decide if the attempt must be rejected
+     *                           or not. If an attempt is rejected, the retryer will retry the call, unless the stop
+     *                           strategy indicates otherwise or the thread is interrupted.
+     * @param listeners          collection of retry listeners
+     * @param retryerBuilder     the builder used to create this instance, may be null
+     */
+    public Retryer(@Nonnull AttemptTimeLimiter<V> attemptTimeLimiter,
+                   @Nonnull StopStrategy stopStrategy,
+                   @Nonnull WaitStrategy waitStrategy,
+                   @Nonnull BlockStrategy blockStrategy,
+                   @Nonnull Predicate<Attempt<V>> rejectionPredicate,
+                   @Nonnull Collection<RetryListener> listeners,
+                   RetryerBuilder<V> retryerBuilder) {
         Preconditions.checkNotNull(attemptTimeLimiter, "timeLimiter may not be null");
         Preconditions.checkNotNull(stopStrategy, "stopStrategy may not be null");
         Preconditions.checkNotNull(waitStrategy, "waitStrategy may not be null");
@@ -135,6 +160,7 @@ public final class Retryer<V> {
         this.blockStrategy = blockStrategy;
         this.rejectionPredicate = rejectionPredicate;
         this.listeners = listeners;
+        this.retryerBuilder = retryerBuilder;
     }
 
     /**
@@ -194,6 +220,16 @@ public final class Retryer<V> {
      */
     public RetryerCallable<V> wrap(Callable<V> callable) {
         return new RetryerCallable<V>(this, callable);
+    }
+
+    /**
+     * Return the {@link RetryerBuilder} used to create this {@link Retryer}
+     * instance or null if no builder was used.
+     *
+     * @return the original {@link RetryerBuilder} used to create this instance
+     */
+    public RetryerBuilder<V> getRetryerBuilder() {
+        return retryerBuilder;
     }
 
     @Immutable
