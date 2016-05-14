@@ -158,6 +158,90 @@ public final class WaitStrategies {
     }
 
     /**
+     * Returns a strategy which sleeps for a random amount of time between the minimumTime and an
+     * exponentially increasing maximum time.  The maximum time increases exponentially after each
+     * failed attempt up to {@code Long.MAX_VALUE}.
+     *
+     * @return a wait strategy that waits a random amount of time and increments
+     *         the maximum bound with each failed attempt using exponential backoff
+     */
+    public static WaitStrategy randomExponentialWait() {
+        return new RandomExponentialWaitStrategy(1, 0L, Long.MAX_VALUE);
+    }
+
+    /**
+     * Returns a strategy which sleeps for an exponential amount of time after the first failed attempt,
+     * and in exponentially incrementing amounts after each failed attempt up to the maximumTime.
+     *
+     * @param maximumTime     the maximum time to sleep
+     * @param maximumTimeUnit the unit of the maximum time
+     * @return a wait strategy that waits a random amount of time and increments
+     *         the maximum bound with each failed attempt using exponential backoff
+     * @throws IllegalStateException if the minimum sleep time is &lt; 0.
+     */
+    public static WaitStrategy randomExponentialWait(long maximumTime,
+                                                     @Nonnull TimeUnit maximumTimeUnit) {
+        Preconditions.checkNotNull(maximumTimeUnit, "The maximum time unit may not be null");
+        return new RandomExponentialWaitStrategy(1, 0L, maximumTimeUnit.toMillis(maximumTime));
+    }
+
+    /**
+     * Returns a strategy which sleeps for a random amount of time between the minimumTime and an
+     * exponentially increasing maximum time.  The maximum time increases exponentially after each
+     * failed attempt up to the maximumTime.
+     *
+     * @param minimumTime     the minimum time to sleep
+     * @param minimumTimeUnit the unit of the minimum time
+     * @param maximumTime     the maximum time to sleep
+     * @param maximumTimeUnit the unit of the maximum time
+     * @return a wait strategy that waits a random amount of time and increments
+     *         the maximum bound with each failed attempt using exponential backoff
+     * @throws IllegalStateException if the minimum sleep time is &lt; 0, or if the
+     *                               maximum sleep time is &lt;= the minimum.
+     */
+    public static WaitStrategy randomExponentialWait(long minimumTime,
+                                                     @Nonnull TimeUnit minimumTimeUnit,
+                                                     long maximumTime,
+                                                     @Nonnull TimeUnit maximumTimeUnit) {
+        Preconditions.checkNotNull(minimumTimeUnit, "The minimum time unit may not be null");
+        Preconditions.checkNotNull(maximumTimeUnit, "The maximum time unit may not be null");
+        return new RandomExponentialWaitStrategy(1,
+                                                 minimumTimeUnit.toMillis(minimumTime),
+                                                 maximumTimeUnit.toMillis(maximumTime));
+    }
+
+    /**
+     * Returns a strategy which sleeps for a random amount of time between the minimumTime and an
+     * exponentially increasing maximum time.  The maximum time increases exponentially after each
+     * failed attempt up to the maximumTime.
+     * The resulting wait time can be further controlled by the multiplier
+     * (but is still held within the minimum and maximum time bounds)
+     * nextWaitTime = randomExponentialIncrement * {@code multiplier}
+     *
+     * @param multiplier      multiply the wait time calculated by this
+     * @param minimumTime     the minimum time to sleep
+     * @param minimumTimeUnit the unit of the minimum time
+     * @param maximumTime     the maximum time to sleep
+     * @param maximumTimeUnit the unit of the maximum time
+     * @return a wait strategy that waits a random amount of time and increments
+     *         the maximum bound with each failed attempt using exponential backoff
+     * @throws IllegalStateException if the minimum sleep time is &lt; 0, or if the
+     *                               maximum sleep time is &lt;= the minimum, or if the
+     *                               multiplier is &gt; the maximum sleep time.
+     */
+    public static WaitStrategy randomExponentialWait(long multiplier,
+                                                     long minimumTime,
+                                                     @Nonnull TimeUnit minimumTimeUnit,
+                                                     long maximumTime,
+                                                     @Nonnull TimeUnit maximumTimeUnit) {
+        Preconditions.checkNotNull(minimumTimeUnit, "The minimum time unit may not be null");
+        Preconditions.checkNotNull(maximumTimeUnit, "The maximum time unit may not be null");
+        return new RandomExponentialWaitStrategy(multiplier,
+                                                 minimumTimeUnit.toMillis(minimumTime),
+                                                 maximumTimeUnit.toMillis(maximumTime));
+    }
+
+    /**
      * Returns a strategy which sleeps for an increasing amount of time after the first failed attempt,
      * and in Fibonacci increments after each failed attempt up to {@link Long#MAX_VALUE}.
      *
@@ -302,6 +386,40 @@ public final class WaitStrategies {
         public long computeSleepTime(Attempt failedAttempt) {
             double exp = Math.pow(2, failedAttempt.getAttemptNumber());
             long result = Math.round(multiplier * exp);
+            if (result > maximumWait) {
+                result = maximumWait;
+            }
+            return result >= 0L ? result : 0L;
+        }
+    }
+
+    @Immutable
+    private static final class RandomExponentialWaitStrategy implements WaitStrategy {
+        private static final Random RANDOM = new Random();
+        private final long multiplier;
+        private final long minimumWait;
+        private final long maximumWait;
+
+        public RandomExponentialWaitStrategy(long multiplier,
+                                             long minimumWait,
+                                             long maximumWait) {
+            Preconditions.checkArgument(multiplier > 0L, "multiplier must be > 0 but is %d", multiplier);
+            Preconditions.checkArgument(minimumWait >= 0L, "minimumWait must be >= 0 but is %d", minimumWait);
+            Preconditions.checkArgument(maximumWait > minimumWait, "maximumWait must be > minimumWait but is %d", maximumWait);
+            Preconditions.checkArgument(multiplier < maximumWait, "multiplier must be < maximumWait but is %d", multiplier);
+            this.multiplier = multiplier;
+            this.minimumWait = minimumWait;
+            this.maximumWait = maximumWait;
+        }
+
+        @Override
+        public long computeSleepTime(Attempt failedAttempt) {
+            long upperBound = Math.round(Math.pow(2, failedAttempt.getAttemptNumber()));
+            long time = Math.abs(RANDOM.nextLong()) % upperBound;
+            long result = Math.round(multiplier * time);
+            if (result < minimumWait) {
+                result = minimumWait;
+            }
             if (result > maximumWait) {
                 result = maximumWait;
             }

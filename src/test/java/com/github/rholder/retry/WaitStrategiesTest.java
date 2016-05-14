@@ -17,6 +17,7 @@
 package com.github.rholder.retry;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import org.junit.Test;
 
@@ -117,6 +118,68 @@ public class WaitStrategiesTest {
     }
 
     @Test
+    public void testRandomExponential() {
+        WaitStrategy randomExponentialWait = WaitStrategies.randomExponentialWait();
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(1, 0)), 0, 2);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(2, 0)), 0, 4);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(3, 0)), 0, 8);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(4, 0)), 0, 16);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(5, 0)), 0, 32);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(6, 0)), 0, 64);
+    }
+
+    @Test
+    public void testRandomExponentialWithMaximumWait() {
+        WaitStrategy randomExponentialWait = WaitStrategies.randomExponentialWait(40, TimeUnit.MILLISECONDS);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(1, 0)), 0, 2);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(2, 0)), 0, 4);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(3, 0)), 0, 8);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(4, 0)), 0, 16);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(5, 0)), 0, 32);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(6, 0)), 0, 40);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(7, 0)), 0, 40);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(Integer.MAX_VALUE, 0)), 0, 40);
+    }
+
+    @Test
+    public void testRandomExponentialWithMinimumAndMaximumWait() {
+        WaitStrategy randomExponentialWait = WaitStrategies.randomExponentialWait(10, TimeUnit.MILLISECONDS, 40, TimeUnit.MILLISECONDS);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(1, 0)), 10, 10);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(2, 0)), 10, 10);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(3, 0)), 10, 10);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(4, 0)), 10, 16);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(5, 0)), 10, 32);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(6, 0)), 10, 40);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(7, 0)), 10, 40);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(Integer.MAX_VALUE, 0)), 10, 40);
+    }
+
+    @Test
+    public void testRandomExponentialWithMultiplierAndMinimumAndMaximumWait() {
+        WaitStrategy randomExponentialWait = WaitStrategies.randomExponentialWait(1000, 4, TimeUnit.MILLISECONDS, 50000, TimeUnit.MILLISECONDS);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(1, 0)), 4, 2000);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(2, 0)), 4, 4000);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(3, 0)), 4, 8000);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(4, 0)), 4, 16000);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(5, 0)), 4, 32000);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(6, 0)), 4, 50000);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(7, 0)), 4, 50000);
+        assertWithin(randomExponentialWait.computeSleepTime(failedAttempt(Integer.MAX_VALUE, 0)), 4, 50000);
+    }
+
+    @Test
+    public void testRandomExponentialRandomness() {
+        WaitStrategy randomExponentialWait = WaitStrategies.randomExponentialWait();
+        Set<Long> times = Sets.newHashSet();
+        for (int i = 0; i < 16; i++) {
+            long time = randomExponentialWait.computeSleepTime(failedAttempt(6, 0));
+            assertWithin(time, 0, 64);
+            times.add(time);
+        }
+        assertTrue(times.size() > 1); // if not, the random may not be random
+    }
+
+    @Test
     public void testFibonacci() {
         WaitStrategy fibonacciWait = WaitStrategies.fibonacciWait();
         assertTrue(fibonacciWait.computeSleepTime(failedAttempt(1, 0L)) == 1L);
@@ -209,5 +272,10 @@ public class WaitStrategiesTest {
         public long getRetryAfter() {
             return retryAfter;
         }
+    }
+
+    private static void assertWithin(long value, long min, long max) {
+        Range<Long> range = Range.closed(min, max);
+        assertTrue(String.format("Expected %s to fall within %s", value, range), range.contains(value));
     }
 }
