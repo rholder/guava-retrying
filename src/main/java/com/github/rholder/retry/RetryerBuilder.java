@@ -19,6 +19,7 @@ package com.github.rholder.retry;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.base.Ticker;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ public class RetryerBuilder<V> {
     private BlockStrategy blockStrategy;
     private Predicate<Attempt<V>> rejectionPredicate = Predicates.alwaysFalse();
     private List<RetryListener> listeners = new ArrayList<RetryListener>();
+    private Ticker ticker;
 
     private RetryerBuilder() {
     }
@@ -122,6 +124,18 @@ public class RetryerBuilder<V> {
     }
 
     /**
+     * Configures the retryer to use custom ticker.
+     *
+     * @param ticker to read current nano time from
+     * @return <code>this</code>
+     */
+    public RetryerBuilder<V> withTicker(@Nonnull Ticker ticker) {
+        Preconditions.checkNotNull(ticker);
+        this.ticker = ticker;
+        return this;
+    }
+
+    /**
      * Configures the retryer to retry if an exception (i.e. any <code>Exception</code> or subclass
      * of <code>Exception</code>) is thrown by the call.
      *
@@ -192,8 +206,9 @@ public class RetryerBuilder<V> {
         StopStrategy theStopStrategy = stopStrategy == null ? StopStrategies.neverStop() : stopStrategy;
         WaitStrategy theWaitStrategy = waitStrategy == null ? WaitStrategies.noWait() : waitStrategy;
         BlockStrategy theBlockStrategy = blockStrategy == null ? BlockStrategies.threadSleepStrategy() : blockStrategy;
+        Ticker theTicker = ticker == null ? Ticker.systemTicker() : ticker;
 
-        return new Retryer<V>(theAttemptTimeLimiter, theStopStrategy, theWaitStrategy, theBlockStrategy, rejectionPredicate, listeners);
+        return new Retryer<V>(theAttemptTimeLimiter, theStopStrategy, theWaitStrategy, theBlockStrategy, rejectionPredicate, listeners, theTicker);
     }
 
     private static final class ExceptionClassPredicate<V> implements Predicate<Attempt<V>> {
