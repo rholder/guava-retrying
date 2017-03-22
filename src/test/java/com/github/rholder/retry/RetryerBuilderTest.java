@@ -571,4 +571,21 @@ public class RetryerBuilderTest {
             }
         };
     }
+
+    @Test
+    public void testRunnable() throws Exception {
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("I'm running");
+            }
+        };
+
+        Retryer retryer = RetryerBuilder.newBuilder()
+            .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+            .retryIfRuntimeException()
+            .build();
+
+        retryer.run(runnable);
+    }
 }
