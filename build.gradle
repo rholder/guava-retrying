@@ -81,7 +81,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.google.guava:guava:[10.+,)'
+    compile 'com.google.guava:guava:20.0'
     compile 'com.google.code.findbugs:jsr305:2.0.2'
 
     // junit testing

@@ -170,16 +170,42 @@ public final class Retryer<V> {
             if (!rejectionPredicate.apply(attempt)) {
                 return attempt.get();
             }
-            if (stopStrategy.shouldStop(attempt)) {
+            stopOrBlock(attemptNumber, attempt);
+        }
+    }
+
+    public void run(Runnable runnable) throws ExecutionException, RetryException {
+        long startTime = System.nanoTime();
+        for (int attemptNumber = 1; ; attemptNumber++) {
+            Attempt<V> attempt;
+            try {
+                runnable.run();
+                attempt = new VoidResultAttempt<V>(attemptNumber, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime));
+            } catch (Throwable t) {
+                attempt = new ExceptionAttempt<V>(t, attemptNumber, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime));
+            }
+
+            for (RetryListener listener : listeners) {
+                listener.onRetry(attempt);
+            }
+
+            if (!rejectionPredicate.apply(attempt)) {
+                return;
+            }
+            stopOrBlock(attemptNumber, attempt);
+        }
+    }
+
+    private void stopOrBlock(int attemptNumber, Attempt<V> attempt) throws RetryException {
+        if (stopStrategy.shouldStop(attempt)) {
+            throw new RetryException(attemptNumber, attempt);
+        } else {
+            long sleepTime = waitStrategy.computeSleepTime(attempt);
+            try {
+                blockStrategy.block(sleepTime);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 throw new RetryException(attemptNumber, attempt);
-            } else {
-                long sleepTime = waitStrategy.computeSleepTime(attempt);
-                try {
-                    blockStrategy.block(sleepTime);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new RetryException(attemptNumber, attempt);
-                }
             }
         }
     }
@@ -279,6 +305,52 @@ public final class Retryer<V> {
         @Override
         public Throwable getExceptionCause() throws IllegalStateException {
             return e.getCause();
+        }
+
+        @Override
+        public long getAttemptNumber() {
+            return attemptNumber;
+        }
+
+        @Override
+        public long getDelaySinceFirstAttempt() {
+            return delaySinceFirstAttempt;
+        }
+    }
+
+    @Immutable
+    static final class VoidResultAttempt<Void> implements Attempt<Void> {
+        private final long attemptNumber;
+        private final long delaySinceFirstAttempt;
+
+        public VoidResultAttempt(long attemptNumber, long delaySinceFirstAttempt) {
+            this.attemptNumber = attemptNumber;
+            this.delaySinceFirstAttempt = delaySinceFirstAttempt;
+        }
+
+        @Override
+        public Void get() throws ExecutionException {
+            throw new IllegalStateException("The attempt resulted in a void result");
+        }
+
+        @Override
+        public boolean hasResult() {
+            return false;
+        }
+
+        @Override
+        public boolean hasException() {
+            return false;
+        }
+
+        @Override
+        public Void getResult() throws IllegalStateException {
+            throw new IllegalStateException("The attempt resulted in a void result");
+        }
+
+        @Override
+        public Throwable getExceptionCause() throws IllegalStateException {
+            throw new IllegalStateException("The attempt resulted in a void result, not in an exception");
         }
 
         @Override

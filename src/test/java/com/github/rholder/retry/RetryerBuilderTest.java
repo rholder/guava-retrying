@@ -571,4 +571,30 @@ public class RetryerBuilderTest {
             }
         };
     }
+
+    @Test
+    public void testRunnable() throws Exception {
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                throw new NullPointerException();
+            }
+        };
+
+        Retryer retryer = RetryerBuilder.newBuilder()
+            .retryIfRuntimeException()
+            .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+            .retryIfRuntimeException()
+            .build();
+
+        try {
+            retryer.run(runnable);
+            fail("RetryException expected");
+        } catch (RetryException e) {
+            assertEquals(3, e.getNumberOfFailedAttempts());
+            assertTrue(e.getLastFailedAttempt().hasException());
+            assertTrue(e.getLastFailedAttempt().getExceptionCause() instanceof NullPointerException);
+            assertTrue(e.getCause() instanceof NullPointerException);
+        }
+    }
 }
