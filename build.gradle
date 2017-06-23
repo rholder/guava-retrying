@@ -82,7 +82,7 @@ repositories {
 
 dependencies {
     compile 'com.google.guava:guava:[10.+,)'
-    compile 'com.google.code.findbugs:jsr305:2.0.2'
+    optional 'com.google.code.findbugs:jsr305:2.0.2'
 
     // junit testing
     testCompile 'junit:junit:4.11'
