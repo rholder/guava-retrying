@@ -16,11 +16,11 @@
 
 package com.github.rholder.retry;
 
+import static org.junit.Assert.*;
+
 import com.github.rholder.retry.Retryer.RetryerCallable;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,12 +30,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.Test;
 
 public class RetryerBuilderTest {
 
@@ -463,9 +458,9 @@ public class RetryerBuilderTest {
     public void testRetryListener_SuccessfulAttempt() throws Exception {
         final Map<Long, Attempt> attempts = new HashMap<Long, Attempt>();
 
-        RetryListener listener = new RetryListener() {
+        RetryListener<Long> listener = new RetryListener<Long>() {
             @Override
-            public <V> void onRetry(Attempt<V> attempt) {
+            public void onRetry(Attempt<Long> attempt) {
                 attempts.put(attempt.getAttemptNumber(), attempt);
             }
         };
@@ -492,9 +487,9 @@ public class RetryerBuilderTest {
     public void testRetryListener_WithException() throws Exception {
         final Map<Long, Attempt> attempts = new HashMap<Long, Attempt>();
 
-        RetryListener listener = new RetryListener() {
+        RetryListener listener = new RetryListener<Long>() {
             @Override
-            public <V> void onRetry(Attempt<V> attempt) {
+            public void onRetry(Attempt<Long> attempt) {
                 attempts.put(attempt.getAttemptNumber(), attempt);
             }
         };
@@ -531,15 +526,15 @@ public class RetryerBuilderTest {
         final AtomicBoolean listenerTwo = new AtomicBoolean(false);
 
         Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
-                .withRetryListener(new RetryListener() {
+                .withRetryListener(new RetryListener<Boolean>() {
                     @Override
-                    public <V> void onRetry(Attempt<V> attempt) {
+                    public void onRetry(Attempt<Boolean> attempt) {
                         listenerOne.set(true);
                     }
                 })
-                .withRetryListener(new RetryListener() {
+                .withRetryListener(new RetryListener<Boolean>() {
                     @Override
-                    public <V> void onRetry(Attempt<V> attempt) {
+                    public void onRetry(Attempt<Boolean> attempt) {
                         listenerTwo.set(true);
                     }
                 })

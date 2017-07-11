@@ -23,14 +23,13 @@ import com.google.common.annotations.Beta;
  * code through a {@link Retryer} instance.
  */
 @Beta
-public interface RetryListener {
+public interface RetryListener<V> {
 
     /**
      * This method with fire no matter what the result is and before the
      * rejection predicate and stop strategies are applied.
      *
      * @param attempt the current {@link Attempt}
-     * @param <V>     the type returned by the retryer callable
      */
-    <V> void onRetry(Attempt<V> attempt);
+    void onRetry(Attempt<V> attempt);
 }
