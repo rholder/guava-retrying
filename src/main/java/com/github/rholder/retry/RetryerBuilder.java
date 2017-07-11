@@ -37,7 +37,7 @@ public class RetryerBuilder<V> {
     private WaitStrategy waitStrategy;
     private BlockStrategy blockStrategy;
     private Predicate<Attempt<V>> rejectionPredicate = Predicates.alwaysFalse();
-    private List<RetryListener> listeners = new ArrayList<RetryListener>();
+    private List<RetryListener<V>> listeners = new ArrayList<RetryListener<V>>();
 
     private RetryerBuilder() {
     }

@@ -49,7 +49,7 @@ public final class Retryer<V> {
     private final BlockStrategy blockStrategy;
     private final AttemptTimeLimiter<V> attemptTimeLimiter;
     private final Predicate<Attempt<V>> rejectionPredicate;
-    private final Collection<RetryListener> listeners;
+    private final Collection<RetryListener<V>> listeners;
 
     /**
      * Constructor
@@ -100,7 +100,7 @@ public final class Retryer<V> {
                    @Nonnull WaitStrategy waitStrategy,
                    @Nonnull BlockStrategy blockStrategy,
                    @Nonnull Predicate<Attempt<V>> rejectionPredicate) {
-        this(attemptTimeLimiter, stopStrategy, waitStrategy, blockStrategy, rejectionPredicate, new ArrayList<RetryListener>());
+        this(attemptTimeLimiter, stopStrategy, waitStrategy, blockStrategy, rejectionPredicate, new ArrayList<RetryListener<V>>());
     }
 
     /**
@@ -121,7 +121,7 @@ public final class Retryer<V> {
                    @Nonnull WaitStrategy waitStrategy,
                    @Nonnull BlockStrategy blockStrategy,
                    @Nonnull Predicate<Attempt<V>> rejectionPredicate,
-                   @Nonnull Collection<RetryListener> listeners) {
+                   @Nonnull Collection<RetryListener<V>> listeners) {
         Preconditions.checkNotNull(attemptTimeLimiter, "timeLimiter may not be null");
         Preconditions.checkNotNull(stopStrategy, "stopStrategy may not be null");
         Preconditions.checkNotNull(waitStrategy, "waitStrategy may not be null");
@@ -163,7 +163,7 @@ public final class Retryer<V> {
                 attempt = new ExceptionAttempt<V>(t, attemptNumber, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime));
             }
 
-            for (RetryListener listener : listeners) {
+            for (RetryListener<V> listener : listeners) {
                 listener.onRetry(attempt);
             }
 
