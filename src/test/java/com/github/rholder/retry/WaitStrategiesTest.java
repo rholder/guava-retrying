@@ -169,11 +169,11 @@ public class WaitStrategiesTest {
     }
 
     public Attempt<Boolean> failedAttempt(long attemptNumber, long delaySinceFirstAttempt) {
-        return new Retryer.ExceptionAttempt<Boolean>(new RuntimeException(), attemptNumber, delaySinceFirstAttempt);
+        return new ExceptionAttempt<Boolean>(new RuntimeException(), attemptNumber, delaySinceFirstAttempt);
     }
 
     public Attempt<Boolean> failedRetryAfterAttempt(long attemptNumber, long delaySinceFirstAttempt) {
-        return new Retryer.ExceptionAttempt<Boolean>(new RetryAfterException(), attemptNumber, delaySinceFirstAttempt);
+        return new ExceptionAttempt<Boolean>(new RetryAfterException(), attemptNumber, delaySinceFirstAttempt);
     }
 
     public Function<RuntimeException, Long> zeroSleepFunction() {
