@@ -52,6 +52,6 @@ public class StopStrategiesTest {
     }
 
     public Attempt<Boolean> failedAttempt(long attemptNumber, long delaySinceFirstAttempt) {
-        return new Retryer.ExceptionAttempt<Boolean>(new RuntimeException(), attemptNumber, delaySinceFirstAttempt);
+        return new ExceptionAttempt<Boolean>(new RuntimeException(), attemptNumber, delaySinceFirstAttempt);
     }
 }

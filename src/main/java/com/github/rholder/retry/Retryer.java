@@ -21,7 +21,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.Callable;
@@ -194,102 +193,6 @@ public final class Retryer<V> {
      */
     public RetryerCallable<V> wrap(Callable<V> callable) {
         return new RetryerCallable<V>(this, callable);
-    }
-
-    @Immutable
-    static final class ResultAttempt<R> implements Attempt<R> {
-        private final R result;
-        private final long attemptNumber;
-        private final long delaySinceFirstAttempt;
-
-        public ResultAttempt(R result, long attemptNumber, long delaySinceFirstAttempt) {
-            this.result = result;
-            this.attemptNumber = attemptNumber;
-            this.delaySinceFirstAttempt = delaySinceFirstAttempt;
-        }
-
-        @Override
-        public R get() throws ExecutionException {
-            return result;
-        }
-
-        @Override
-        public boolean hasResult() {
-            return true;
-        }
-
-        @Override
-        public boolean hasException() {
-            return false;
-        }
-
-        @Override
-        public R getResult() throws IllegalStateException {
-            return result;
-        }
-
-        @Override
-        public Throwable getExceptionCause() throws IllegalStateException {
-            throw new IllegalStateException("The attempt resulted in a result, not in an exception");
-        }
-
-        @Override
-        public long getAttemptNumber() {
-            return attemptNumber;
-        }
-
-        @Override
-        public long getDelaySinceFirstAttempt() {
-            return delaySinceFirstAttempt;
-        }
-    }
-
-    @Immutable
-    static final class ExceptionAttempt<R> implements Attempt<R> {
-        private final ExecutionException e;
-        private final long attemptNumber;
-        private final long delaySinceFirstAttempt;
-
-        public ExceptionAttempt(Throwable cause, long attemptNumber, long delaySinceFirstAttempt) {
-            this.e = new ExecutionException(cause);
-            this.attemptNumber = attemptNumber;
-            this.delaySinceFirstAttempt = delaySinceFirstAttempt;
-        }
-
-        @Override
-        public R get() throws ExecutionException {
-            throw e;
-        }
-
-        @Override
-        public boolean hasResult() {
-            return false;
-        }
-
-        @Override
-        public boolean hasException() {
-            return true;
-        }
-
-        @Override
-        public R getResult() throws IllegalStateException {
-            throw new IllegalStateException("The attempt resulted in an exception, not in a result");
-        }
-
-        @Override
-        public Throwable getExceptionCause() throws IllegalStateException {
-            return e.getCause();
-        }
-
-        @Override
-        public long getAttemptNumber() {
-            return attemptNumber;
-        }
-
-        @Override
-        public long getDelaySinceFirstAttempt() {
-            return delaySinceFirstAttempt;
-        }
     }
 
     /**
