@@ -56,6 +56,8 @@ public class AttemptTimeLimiters {
      */
     public static <V> AttemptTimeLimiter<V> fixedTimeLimit(long duration, @Nonnull TimeUnit timeUnit) {
         Preconditions.checkNotNull(timeUnit);
+        Preconditions.checkNotNull(timeUnit);
+
         return new FixedAttemptTimeLimit<V>(duration, timeUnit);
     }
 
