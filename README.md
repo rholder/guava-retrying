@@ -1,7 +1,7 @@
 [![Build Status](http://img.shields.io/travis/rholder/guava-retrying.svg)](https://travis-ci.org/rholder/guava-retrying) [![Latest Version](http://img.shields.io/badge/latest-2.0.0-brightgreen.svg)](https://github.com/rholder/guava-retrying/releases/tag/v2.0.0) [![License](http://img.shields.io/badge/license-apache%202-brightgreen.svg)](https://github.com/rholder/guava-retrying/blob/master/LICENSE)
 
 
-##What is this?
+## What is this?
 The guava-retrying module provides a general purpose method for retrying arbitrary Java code with specific stop, retry,
 and exception handling capabilities that are enhanced by Guava's predicate matching.
 
@@ -11,7 +11,7 @@ others can easily pull it into their existing projects with minimal effort.  It 
 exponential and Fibonacci backoff [WaitStrategies](http://rholder.github.io/guava-retrying/javadoc/2.0.0/com/github/rholder/retry/WaitStrategies.html)
 that might be useful for situations where more well-behaved service polling is preferred.
 
-##Maven
+## Maven
 ```xml
     <dependency>
       <groupId>com.github.rholder</groupId>
@@ -20,12 +20,12 @@ that might be useful for situations where more well-behaved service polling is p
     </dependency>
 ```
 
-##Gradle
+## Gradle
 ```groovy
     compile "com.github.rholder:guava-retrying:2.0.0"
 ```
 
-##Quickstart
+## Quickstart
 A minimal sample of some of the functionality would look like:
 
 ```java
@@ -55,7 +55,7 @@ This will retry whenever the result of the `Callable` is null, if an `IOExceptio
 `RetryException` that contains information about the last failed attempt. If any other `Exception` pops out of the
 `call()` method it's wrapped and rethrown in an `ExecutionException`.
 
-##Exponential Backoff
+## Exponential Backoff
 
 Create a `Retryer` that retries forever, waiting after every failed retry in increasing exponential backoff intervals
 until at most 5 minutes. After 5 minutes, retry from then on in 5 minute intervals.
@@ -71,7 +71,7 @@ Retryer<Boolean> retryer = RetryerBuilder.<Boolean>newBuilder()
 You can read more about [exponential backoff](http://en.wikipedia.org/wiki/Exponential_backoff) and the historic role
 it played in the development of TCP/IP in [Congestion Avoidance and Control](http://ee.lbl.gov/papers/congavoid.pdf).
 
-##Fibonacci Backoff
+## Fibonacci Backoff
 
 Create a `Retryer` that retries forever, waiting after every failed retry in increasing Fibonacci backoff intervals
 until at most 2 minutes. After 2 minutes, retry from then on in 2 minute intervals.
@@ -101,10 +101,10 @@ at a certain point (although very unlikely with useful parameters for retrying).
 
 Inspiration for this implementation came from [Efficient retry/backoff mechanisms](https://paperairoplane.net/?p=640).
 
-##Documentation
+## Documentation
 Javadoc can be found [here](http://rholder.github.io/guava-retrying/javadoc/2.0.0).
 
-##Building from source
+## Building from source
 The guava-retrying module uses a [Gradle](http://gradle.org)-based build system. In the instructions
 below, [`./gradlew`](http://vimeo.com/34436402) is invoked from the root of the source tree and serves as
 a cross-platform, self-contained bootstrap mechanism for the build. The only
@@ -119,11 +119,11 @@ prerequisites are [Git](https://help.github.com/articles/set-up-git) and JDK 1.6
 ### install all jars into your local Maven cache
 `./gradlew install`
 
-##License
+## License
 The guava-retrying module is released under version 2.0 of the
 [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
 
-##Contributors
+## Contributors
 * Jean-Baptiste Nizet (JB)
 * Jason Dunkelberger (dirkraft)
 * Diwaker Gupta (diwakergupta)
