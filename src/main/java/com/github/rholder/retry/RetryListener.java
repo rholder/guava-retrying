@@ -23,7 +23,7 @@ import com.google.common.annotations.Beta;
  * code through a {@link Retryer} instance.
  */
 @Beta
-public interface RetryListener {
+public interface RetryListener<V> {
 
     /**
      * This method with fire no matter what the result is and before the
