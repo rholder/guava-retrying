@@ -24,6 +24,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -87,11 +88,11 @@ public class AttemptTimeLimiters {
         private final TimeUnit timeUnit;
 
         public FixedAttemptTimeLimit(long duration, @Nonnull TimeUnit timeUnit) {
-            this(new SimpleTimeLimiter(), duration, timeUnit);
+            this(SimpleTimeLimiter.create(Executors.newCachedThreadPool()), duration, timeUnit);
         }
 
         public FixedAttemptTimeLimit(long duration, @Nonnull TimeUnit timeUnit, @Nonnull ExecutorService executorService) {
-            this(new SimpleTimeLimiter(executorService), duration, timeUnit);
+            this(SimpleTimeLimiter.create(executorService), duration, timeUnit);
         }
 
         private FixedAttemptTimeLimit(@Nonnull TimeLimiter timeLimiter, long duration, @Nonnull TimeUnit timeUnit) {
@@ -104,7 +105,7 @@ public class AttemptTimeLimiters {
 
         @Override
         public V call(Callable<V> callable) throws Exception {
-            return timeLimiter.callWithTimeout(callable, duration, timeUnit, true);
+            return timeLimiter.callWithTimeout(callable, duration, timeUnit);
         }
     }
 }
