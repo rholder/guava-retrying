@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -229,6 +230,36 @@ public final class WaitStrategies {
         return new CompositeWaitStrategy(waitStrategyList);
     }
 
+    /**
+     * Returns a exception based on randomness between 0..min(maxBackOffTime, (minBackOffTime * multiplier * failedAttempt.getAttemptNumber()))
+     * This kind of randomness is well known inside AWS as Jitter, provides better work vs client backoff distribution.
+     * Reference: https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
+     * @param maxBackOffTime the maximum backoff time
+     * @param minBackOffTime the minimum backoff time
+     * @param multiplier a multiplier to be used on the randomness calculation
+     * @param timeUnit the unit of the backoff's
+     * @return a wait strategy that increments with each failed attempt using a Jitter sequence
+     */
+    public static WaitStrategy fullJitterWait(long maxBackOffTime, long minBackOffTime, long multiplier,
+                                              @Nonnull TimeUnit timeUnit) {
+        Preconditions.checkNotNull(timeUnit, "TimeUnit cannot be null");
+        return new FullJitterWaitStrategy(timeUnit.toMillis(maxBackOffTime), timeUnit.toMillis(minBackOffTime),
+                multiplier);
+    }
+
+    /**
+     * Returns a exception based on randomness between 0..min(maxBackOffTime, (minBackOffTime * multiplier * failedAttempt.getAttemptNumber()))
+     * This kind of randomness is well known inside AWS as Jitter, provides better work vs client backoff distribution.
+     * Reference: https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
+     * @param maxBackOffTime the maximum backoff time
+     * @param minBackOffTime the minimum backoff time
+     * @param timeUnit the unit of the backoff's
+     * @return a wait strategy that increments with each failed attempt using a Jitter sequence
+     */
+    public static WaitStrategy fullJitterWait(long maxBackOffTime, long minBackOffTime, TimeUnit timeUnit) {
+        return fullJitterWait(maxBackOffTime, minBackOffTime, FullJitterWaitStrategy.DEFAULT_BACKOFF_MULTIPLIER, timeUnit);
+    }
+
     @Immutable
     private static final class FixedWaitStrategy implements WaitStrategy {
         private final long sleepTime;
@@ -391,6 +422,52 @@ public final class WaitStrategies {
                 }
             }
             return 0L;
+        }
+    }
+
+    /**
+     * This backoff and wait strategy is based on a study from AWS.
+     * Reference: https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
+     */
+    @Immutable
+    private static class FullJitterWaitStrategy implements WaitStrategy {
+
+        public static final long DEFAULT_BACKOFF_MULTIPLIER = 2L;
+
+        private static final Random RANDOM = new SecureRandom();
+
+        private final long maxBackOffInMs;
+
+        private final long minBackOffInMs;
+
+        private final long multiplier;
+
+        public FullJitterWaitStrategy(long maxBackOffInMs, long minBackOffInMs, long multiplier) {
+            Preconditions.checkArgument(maxBackOffInMs > 0, "Max BackOff time in millis cannot be less or equal to 0(zero).");
+            Preconditions.checkArgument(minBackOffInMs > 0, "Min BackOff time in millis cannot be less or equal to 0(zero).");
+            Preconditions.checkArgument(multiplier > 0, "Multiplier number cannot be less or equal to 0(zero).");
+            this.maxBackOffInMs = maxBackOffInMs;
+            this.minBackOffInMs = minBackOffInMs;
+            this.multiplier = multiplier < DEFAULT_BACKOFF_MULTIPLIER ? DEFAULT_BACKOFF_MULTIPLIER : multiplier;
+        }
+
+        @Override
+        public long computeSleepTime(Attempt failedAttempt) {
+            long timeToBackOff = nextLong(0,
+                    Math.min(maxBackOffInMs, (minBackOffInMs * multiplier * failedAttempt.getAttemptNumber())));
+            return timeToBackOff;
+        }
+
+        private static long nextLong(long startInclusive, long endExclusive) {
+            Preconditions.checkArgument(endExclusive >= startInclusive, "Start value must be smaller or equal to end value.");
+            Preconditions.checkArgument(startInclusive >= 0L, "Both range values must be non-negative.");
+            return startInclusive == endExclusive ? startInclusive : (long)nextDouble((double)startInclusive, (double)endExclusive);
+        }
+
+        private static double nextDouble(double startInclusive, double endInclusive) {
+            Preconditions.checkArgument(endInclusive >= startInclusive, "Start value must be smaller or equal to end value.");
+            Preconditions.checkArgument(startInclusive >= 0.0D, "Both range values must be non-negative.");
+            return startInclusive == endInclusive ? startInclusive : startInclusive + (endInclusive - startInclusive) * RANDOM.nextDouble();
         }
     }
 }

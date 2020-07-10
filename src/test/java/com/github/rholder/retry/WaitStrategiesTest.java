@@ -154,6 +154,34 @@ public class WaitStrategiesTest {
     }
 
     @Test
+    public void testFullJitterWaitWithoutMultiplier() {
+        WaitStrategy randomWait = WaitStrategies.fullJitterWait(2000L, 500, TimeUnit.MILLISECONDS);
+        Set<Long> times = Sets.newHashSet();
+        for (int i = 0; i < 4; ++i) {
+            times.add(randomWait.computeSleepTime(failedAttempt(i + 1, 6546L)));
+        }
+        assertTrue(times.size() > 1); // if not, the jitter is not random
+        for (long time : times) {
+            assertTrue(time >= 0L);
+            assertTrue(time <= 2000L);
+        }
+    }
+
+    @Test
+    public void testFullJitterWaitWithMultiplier() {
+        WaitStrategy randomWait = WaitStrategies.fullJitterWait(2000L, 500, 3, TimeUnit.MILLISECONDS);
+        Set<Long> times = Sets.newHashSet();
+        for (int i = 0; i < 4; ++i) {
+            times.add(randomWait.computeSleepTime(failedAttempt(i + 1, 6546L)));
+        }
+        assertTrue(times.size() > 1); // if not, the jitter is not random
+        for (long time : times) {
+            assertTrue(time >= 0L);
+            assertTrue(time <= 2000L);
+        }
+    }
+
+    @Test
     public void testExceptionWait() {
         WaitStrategy exceptionWait = WaitStrategies.exceptionWait(RuntimeException.class, zeroSleepFunction());
         assertEquals(0L, exceptionWait.computeSleepTime(failedAttempt(42, 7227)));
