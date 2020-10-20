@@ -54,4 +54,9 @@ public class StopStrategiesTest {
     public Attempt<Boolean> failedAttempt(long attemptNumber, long delaySinceFirstAttempt) {
         return new Retryer.ExceptionAttempt<Boolean>(new RuntimeException(), attemptNumber, delaySinceFirstAttempt);
     }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testStopWithIllegalArgumentException(){
+        StopStrategies.stopAfterAttempt(0);
+    }
 }

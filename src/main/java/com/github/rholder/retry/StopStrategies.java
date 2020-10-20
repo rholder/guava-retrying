@@ -100,7 +100,7 @@ public final class StopStrategies {
         private final int maxAttemptNumber;
 
         public StopAfterAttemptStrategy(int maxAttemptNumber) {
-            Preconditions.checkArgument(maxAttemptNumber >= 1, "maxAttemptNumber must be >= 1 but is %d", maxAttemptNumber);
+            Preconditions.checkArgument(maxAttemptNumber >= 1, "maxAttemptNumber must be >= 1 but is %s", maxAttemptNumber);
             this.maxAttemptNumber = maxAttemptNumber;
         }
 
@@ -115,7 +115,7 @@ public final class StopStrategies {
         private final long maxDelay;
 
         public StopAfterDelayStrategy(long maxDelay) {
-            Preconditions.checkArgument(maxDelay >= 0L, "maxDelay must be >= 0 but is %d", maxDelay);
+            Preconditions.checkArgument(maxDelay >= 0L, "maxDelay must be >= 0 but is %s", maxDelay);
             this.maxDelay = maxDelay;
         }
 

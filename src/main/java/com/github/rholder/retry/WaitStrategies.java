@@ -234,7 +234,7 @@ public final class WaitStrategies {
         private final long sleepTime;
 
         public FixedWaitStrategy(long sleepTime) {
-            Preconditions.checkArgument(sleepTime >= 0L, "sleepTime must be >= 0 but is %d", sleepTime);
+            Preconditions.checkArgument(sleepTime >= 0L, "sleepTime must be >= 0 but is %s", sleepTime);
             this.sleepTime = sleepTime;
         }
 
@@ -251,8 +251,8 @@ public final class WaitStrategies {
         private final long maximum;
 
         public RandomWaitStrategy(long minimum, long maximum) {
-            Preconditions.checkArgument(minimum >= 0, "minimum must be >= 0 but is %d", minimum);
-            Preconditions.checkArgument(maximum > minimum, "maximum must be > minimum but maximum is %d and minimum is", maximum, minimum);
+            Preconditions.checkArgument(minimum >= 0, "minimum must be >= 0 but is %s", minimum);
+            Preconditions.checkArgument(maximum > minimum, "maximum must be > minimum but maximum is %s and minimum is", maximum, minimum);
 
             this.minimum = minimum;
             this.maximum = maximum;
@@ -272,7 +272,7 @@ public final class WaitStrategies {
 
         public IncrementingWaitStrategy(long initialSleepTime,
                                         long increment) {
-            Preconditions.checkArgument(initialSleepTime >= 0L, "initialSleepTime must be >= 0 but is %d", initialSleepTime);
+            Preconditions.checkArgument(initialSleepTime >= 0L, "initialSleepTime must be >= 0 but is %s", initialSleepTime);
             this.initialSleepTime = initialSleepTime;
             this.increment = increment;
         }
@@ -291,9 +291,9 @@ public final class WaitStrategies {
 
         public ExponentialWaitStrategy(long multiplier,
                                        long maximumWait) {
-            Preconditions.checkArgument(multiplier > 0L, "multiplier must be > 0 but is %d", multiplier);
-            Preconditions.checkArgument(maximumWait >= 0L, "maximumWait must be >= 0 but is %d", maximumWait);
-            Preconditions.checkArgument(multiplier < maximumWait, "multiplier must be < maximumWait but is %d", multiplier);
+            Preconditions.checkArgument(multiplier > 0L, "multiplier must be > 0 but is %s", multiplier);
+            Preconditions.checkArgument(maximumWait >= 0L, "maximumWait must be >= 0 but is %s", maximumWait);
+            Preconditions.checkArgument(multiplier < maximumWait, "multiplier must be < maximumWait but is %s", multiplier);
             this.multiplier = multiplier;
             this.maximumWait = maximumWait;
         }
@@ -315,9 +315,9 @@ public final class WaitStrategies {
         private final long maximumWait;
 
         public FibonacciWaitStrategy(long multiplier, long maximumWait) {
-            Preconditions.checkArgument(multiplier > 0L, "multiplier must be > 0 but is %d", multiplier);
-            Preconditions.checkArgument(maximumWait >= 0L, "maximumWait must be >= 0 but is %d", maximumWait);
-            Preconditions.checkArgument(multiplier < maximumWait, "multiplier must be < maximumWait but is %d", multiplier);
+            Preconditions.checkArgument(multiplier > 0L, "multiplier must be > 0 but is %s", multiplier);
+            Preconditions.checkArgument(maximumWait >= 0L, "maximumWait must be >= 0 but is %s", maximumWait);
+            Preconditions.checkArgument(multiplier < maximumWait, "multiplier must be < maximumWait but is %s", multiplier);
             this.multiplier = multiplier;
             this.maximumWait = maximumWait;
         }
