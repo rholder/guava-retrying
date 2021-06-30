@@ -100,7 +100,7 @@ public final class StopStrategies {
         private final int maxAttemptNumber;
 
         public StopAfterAttemptStrategy(int maxAttemptNumber) {
-            Preconditions.checkArgument(maxAttemptNumber >= 1, "maxAttemptNumber must be >= 1 but is %d", maxAttemptNumber);
+            Preconditions.checkArgument(maxAttemptNumber >= 1, "maxAttemptNumber must be >= 1 but is %s", maxAttemptNumber);
             this.maxAttemptNumber = maxAttemptNumber;
         }
 
