@@ -43,7 +43,7 @@ public final class BlockStrategies {
 
         @Override
         public void block(long sleepTime) throws InterruptedException {
-            if (sleepTime == 0L){
+            if (sleepTime == 0L) {
                 return;
             }
             Thread.sleep(sleepTime);
