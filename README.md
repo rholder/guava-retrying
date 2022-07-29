@@ -104,20 +104,12 @@ Inspiration for this implementation came from [Efficient retry/backoff mechanism
 ##Documentation
 Javadoc can be found [here](http://rholder.github.io/guava-retrying/javadoc/2.0.0).
 
-##Building from source
-The guava-retrying module uses a [Gradle](http://gradle.org)-based build system. In the instructions
-below, [`./gradlew`](http://vimeo.com/34436402) is invoked from the root of the source tree and serves as
-a cross-platform, self-contained bootstrap mechanism for the build. The only
-prerequisites are [Git](https://help.github.com/articles/set-up-git) and JDK 1.6+.
-
 ### check out sources
-`git clone git://github.com/rholder/guava-retrying.git`
+`git clone git@github.com:www1350/guava-retrying.git`
 
-### compile and test, build all jars
-`./gradlew build`
+### compile
+`mvn clean install -DskipTests`
 
-### install all jars into your local Maven cache
-`./gradlew install`
 
 ##License
 The guava-retrying module is released under version 2.0 of the
