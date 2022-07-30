@@ -19,15 +19,13 @@ package com.github.rholder.retry;
 import com.github.rholder.retry.Retryer.RetryerCallable;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -38,6 +36,70 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class RetryerBuilderTest {
+
+
+    @Test
+    public void testWithAllStrategy() throws ExecutionException, RetryException {
+        Retryer retryer = RetryerBuilder.<Boolean>newBuilder()
+                .withAttemptTimeLimiter(AttemptTimeLimiters.fixedTimeLimit(100, TimeUnit.MILLISECONDS, Executors.newSingleThreadExecutor()))
+                .withRetryListener(new RetryListener() {
+                    @Override
+                    public <V> void onRetry(Attempt<V> attempt) {
+                        System.out.println(attempt.getAttemptNumber());
+                    }
+                })
+                .retryIfResult(Predicates.isNull())
+                .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+                .withWaitStrategy(WaitStrategies.fixedWait(200, TimeUnit.MILLISECONDS))
+                .withBlockStrategy(BlockStrategies.threadSleepStrategy())
+                .build();
+        for(int a = 0; a<100;a++) {
+            int maxCount = ThreadLocalRandom.current().nextInt(5);
+            extracted(maxCount, retryer);
+        }
+
+
+    }
+
+    private void extracted(int maxCount, Retryer retryer) throws ExecutionException, RetryException {
+        RetryerCallable<String> callable = retryer.wrap(retry5Call(maxCount));
+        if(maxCount == 1){
+            try {
+                callable.call();
+            } catch (Throwable e) {
+                Assert.assertEquals(TimeoutException.class, e.getCause().getClass());
+            }
+
+        } else if (maxCount < 3){
+            Assert.assertEquals(callable.call(), "absurd");
+        } else {
+            try {
+                callable.call();
+            } catch (RetryException e) {
+                assertEquals(3, e.getNumberOfFailedAttempts());
+                return;
+            }
+            assertFalse(true);
+        }
+    }
+
+    private Callable retry5Call(final int maxCount) {
+        return new Callable<String>() {
+            int count = 1;
+
+
+            @Override
+            public String call() throws Exception {
+                if (maxCount == 1){
+                    Thread.sleep(101);
+                }
+                if(count++ > maxCount){
+                    return "absurd";
+                }
+                return null;
+            }
+        };
+    }
 
     @Test
     public void testWithWaitStrategy() throws ExecutionException, RetryException {
