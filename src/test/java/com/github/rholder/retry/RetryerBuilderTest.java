@@ -40,6 +40,7 @@ public class RetryerBuilderTest {
 
     @Test
     public void testWithAllStrategy() throws ExecutionException, RetryException {
+        // retry limit 3 times with result not null ,if runtime > 100mills throw exception
         Retryer retryer = RetryerBuilder.<Boolean>newBuilder()
                 .withAttemptTimeLimiter(AttemptTimeLimiters.fixedTimeLimit(100, TimeUnit.MILLISECONDS, Executors.newSingleThreadExecutor()))
                 .withRetryListener(new RetryListener() {
